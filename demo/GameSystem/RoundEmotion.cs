@@ -38,7 +38,7 @@ namespace LiveCameraSample
 
         public string GetRoundDescription()
         {
-            return $"Try to get the highest \n'{this.targetEmotion}' \nscore you can!";
+            return $"Try to get {this.targetScore} \n'{this.targetEmotion}' score!";
         }
 
         public Dictionary<Guid, int> ComputeFrameScorePerPlayer(LiveCameraResult apiResult)

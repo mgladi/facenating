@@ -164,35 +164,7 @@ namespace LiveCameraSample
 
             return DrawOverlay(baseImage, drawAction, true);
         }
-
-        public static BitmapSource DrawScores(BitmapSource baseImage, Dictionary<Guid, int> scores)
-        {
-            if (scores == null)
-            {
-                return baseImage;
-            }
-
-            Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
-            {
-                double y = 0;
-                foreach (var score in scores.Values) //TODO
-                {
-                    // Create formatted text--in a particular font at a particular size
-                    FormattedText ft = new FormattedText(score + "pts",
-                        CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
-                        42 * annotationScale, Brushes.Black);
-                    // Instead of calling DrawText (which can only draw the text in a solid colour), we
-                    // convert to geometry and use DrawGeometry, which allows us to add an outline. 
-                    var geom = ft.BuildGeometry(new System.Windows.Point(10 * annotationScale, y));
-                    drawingContext.DrawGeometry(s_lineBrush, new Pen(Brushes.Black, 2 * annotationScale), geom);
-                    // Move line down
-                    y += 42 * annotationScale;
-                }
-            };
-
-            return DrawOverlay(baseImage, drawAction, true);
-        }
-
+        
         public static BitmapSource DrawRound(BitmapSource baseImage, string title, string content)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>

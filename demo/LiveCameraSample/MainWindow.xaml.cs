@@ -155,11 +155,12 @@ namespace LiveCameraSample
 
                     }
                     else if (gameState == GameState.Game)
-                        {
+                    {
                         currentTimerTask = TimeSpan.FromSeconds(6);
                         currentTimeTaskStart = DateTime.Now;
                         gameState = GameState.RoundEnd;
-                        }
+                        scoringSystem.CreateNewRound();
+                    }
 
                     else if (gameState == GameState.RoundEnd)
                     {
@@ -372,7 +373,6 @@ namespace LiveCameraSample
                     Dictionary<Guid, int> scores = round.ComputeFrameScorePerPlayer(result);
                     scoringSystem.AddToCurrentRound(scores);
                     visImage = Visualization.DrawSomething(visImage, emotion + ":" + amount, new Point(0, 0));
-                    visImage = Visualization.DrawScores(visImage, scores);
 
                     visImage = Visualization.DrawFaces(visImage, result.Identities, scoringSystem);
                     visImage = Visualization.DrawTags(visImage, result.Tags);
@@ -394,10 +394,16 @@ namespace LiveCameraSample
             return Visualization.DrawRound(bitmap, "Start round " + roundNumber, description);
 
         }
+
         private BitmapSource VisualizeEndRound()
         {
             var bitmap = VisualizeRound();
-            return Visualization.DrawRound(bitmap, "End round " + roundNumber, "Get Ready...");
+            string s = "";
+            foreach (var item in scoringSystem.TotalScore)
+            {
+                s += item.Key + ": " + item.Value + "\n";
+            }
+            return Visualization.DrawRound(bitmap, "End round " + roundNumber, s);
 
         }
         private BitmapSource VisualizeRound()
@@ -617,7 +623,6 @@ namespace LiveCameraSample
             }
 
             updateMode(AppMode.Emotions);
-            scoringSystem.CreateNewRound();
             this.gameState = GameState.RoundBegin;
             this.currentTimerTask = TimeSpan.FromSeconds(6);
             this.currentTimeTaskStart = DateTime.Now;
