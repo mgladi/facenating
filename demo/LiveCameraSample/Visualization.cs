@@ -192,14 +192,22 @@ namespace LiveCameraSample
             return DrawOverlay(baseImage, drawAction, true);
         }
 
-        public static BitmapSource DrawRound(BitmapSource baseImage, int roundNum, string state)
+        public static BitmapSource DrawRound(BitmapSource baseImage, string title, string content)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
-                FormattedText ft = new FormattedText(state + " Round " + roundNum,
-                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 25, Brushes.Black);
-                var geom = ft.BuildGeometry(new System.Windows.Point(20,20));
-                drawingContext.DrawGeometry(s_lineBrush, new Pen(Brushes.Black, 2 * annotationScale), geom);
+                FormattedText titleText = new FormattedText(title,
+                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 25, Brushes.Purple);
+                var titlePoint = new System.Windows.Point(20, 20);
+
+                FormattedText contentText = new FormattedText(content,
+                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 14, Brushes.Black);
+
+                var contentPoint = new System.Windows.Point(20, 60);
+
+                drawingContext.DrawText(titleText, titlePoint);
+                drawingContext.DrawText(contentText, contentPoint);
+
             };
 
             return DrawOverlay(baseImage, drawAction);
@@ -223,7 +231,8 @@ namespace LiveCameraSample
                         face.FaceRectangle.Left, face.FaceRectangle.Top,
                         face.FaceRectangle.Width, face.FaceRectangle.Height);
                     string text = "";
-
+                    text += face.FaceId;
+                   
                     if (face.FaceAttributes != null)
                     {
                         text += Aggregation.SummarizeFaceAttributes(face.FaceAttributes);

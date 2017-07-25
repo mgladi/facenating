@@ -149,7 +149,7 @@ namespace LiveCameraSample
                 {
                     if (gameState == GameState.RoundBegin)
                     {
-                        currentTimerTask = TimeSpan.FromSeconds(30);
+                        currentTimerTask = TimeSpan.FromSeconds(15);
                         currentTimeTaskStart = DateTime.Now;
                         gameState = GameState.Game;
                     }
@@ -387,11 +387,11 @@ namespace LiveCameraSample
 
                 if (this.gameState == GameState.RoundBegin)
                 {
-                    visImage = VisualizeStartRound(roundNumber);
+                    visImage = VisualizeStartRound();
                 }
                 else if (this.gameState == GameState.RoundEnd)
                 {
-                    visImage = VisualizeEndRound(roundNumber);
+                    visImage = VisualizeEndRound();
                 }
                 else if (this.gameState == GameState.Game)
                 {
@@ -414,19 +414,20 @@ namespace LiveCameraSample
         }
 
 
-        private BitmapSource VisualizeStartRound(int roundNum)
+        private BitmapSource VisualizeStartRound()
         {
-            var bitmap = VisualizeRound(roundNum);
-            return Visualization.DrawRound(bitmap, roundNum, "Start");
+            var bitmap = VisualizeRound();
+            var description = round.GetRoundDescription();
+            return Visualization.DrawRound(bitmap, "Start round " + roundNumber, description);
 
         }
-        private BitmapSource VisualizeEndRound(int roundNum)
+        private BitmapSource VisualizeEndRound()
         {
-            var bitmap = VisualizeRound(roundNum);
-            return Visualization.DrawRound(bitmap, roundNum, "End");
+            var bitmap = VisualizeRound();
+            return Visualization.DrawRound(bitmap, "End round " + roundNumber, "Get Ready...");
 
         }
-        private BitmapSource VisualizeRound(int roundNum)
+        private BitmapSource VisualizeRound()
         {
             // Define parameters used to create the BitmapSource.
             PixelFormat pf = PixelFormats.Gray2;

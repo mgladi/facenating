@@ -38,30 +38,38 @@ namespace LiveCameraSample
 
         public string GetRoundDescription()
         {
-            return $"Try to get the highest '{this.targetEmotion}' score you can!";
+            return $"Try to get the highest \n'{this.targetEmotion}' \nscore you can!";
         }
 
         public Dictionary<Guid, int> ComputeFrameScorePerPlayer(LiveCameraResult apiResult)
         {
-            List<int> frameScores = new List<int>();
-            int currScore;
-            KeyValuePair<string, float> currDominantEmotion;
-            if (apiResult.EmotionScores!= null)
+            
+            var scoresDictionary = new Dictionary<Guid, int>();
+
+            if (apiResult.Guids != null && apiResult.EmotionScores != null)
             {
-                foreach (EmotionScores userEmotionScores in apiResult.EmotionScores)
+                int currScore;
+                KeyValuePair<string, float> currDominantEmotion;
+
+                for (int i = 0; i < apiResult.Guids.Length; i++)
                 {
+                    Guid guid = apiResult.Guids[i];
                     currScore = 0;
-                    currDominantEmotion = getDominantEmotion(userEmotionScores);
+                    currDominantEmotion = getDominantEmotion(apiResult.EmotionScores[i]);
                     if (currDominantEmotion.Key == this.targetEmotion.ToString() &&
                         Math.Abs(currDominantEmotion.Value - this.targetScore) <= Delta)
                     {
-                        currScore = 10;
+                        scoresDictionary[guid] = 10;
                     }
-                    frameScores.Add(currScore);
+                    else
+                    {
+                        scoresDictionary[guid] = 0;
+                    }
                 }
             }
 
-            return new Dictionary<Guid, int>(); //TODO
+
+            return scoresDictionary;
         }
 
         private double getRandomScore()
