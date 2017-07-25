@@ -283,7 +283,7 @@ namespace LiveCameraSample
         private async Task<LiveCameraResult> EmotionAnalysisFunction(VideoFrame frame)
         {
             var jpg = frame.Image.ToMemoryStream(".jpg", s_jpegParams);
-            var attrs = new List<FaceAttributeType> { FaceAttributeType.Emotion };
+            var attrs = new List<FaceAttributeType> { FaceAttributeType.Age, FaceAttributeType.Emotion };
             Face[] faces = await _faceClient.DetectAsync(jpg, returnFaceAttributes: attrs);
             Guid[] faceIds = faces.Select(face => face.FaceId).ToArray();
 
@@ -575,7 +575,6 @@ namespace LiveCameraSample
 
         private async void button_Click(object sender, RoutedEventArgs e)
         {
-
             button.Visibility = Visibility.Hidden;
 
             var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
