@@ -90,11 +90,24 @@ namespace LiveCameraSample
             var ratio = ((1.0) * baseImage.PixelHeight) / ((1.0) * baseImage.PixelWidth); 
             if (faces == null)
             {
+                /*
+                */
                 return baseImage;
             }
 
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
+
+                if (faces.Length == 0)
+                {
+                    FormattedText ft = new FormattedText("Please stand\nin front of\nthe camera",
+                        CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
+                        42, Brushes.Black);
+                    // Instead of calling DrawText (which can only draw the text in a solid colour), we
+                    // convert to geometry and use DrawGeometry, which allows us to add an outline. 
+                    drawingContext.DrawText(ft, new Point(130,30));
+                    
+                }
                 for (int i = 0; i < faces.Length; i++)
                 {
                     var face = faces[i];
@@ -116,8 +129,6 @@ namespace LiveCameraSample
                         int xOffset = (((int)rectWidth - (int)faceRect.Width) / 2);
                         int yOffset = (((int)rectHeight - (int)faceRect.Height) / 2);
 
-                        newFaceX = Math.Max(0, newFaceX);
-                        newFaceY = Math.Max(0, newFaceY);
                         if (newFaceX < 0)
                         {
                             newFaceX = 0;
@@ -134,7 +145,14 @@ namespace LiveCameraSample
                         {
                             newFaceY = baseImage.Height - newFaceHeight;
                         }
-
+                        if (newFaceX < 0)
+                        {
+                            newFaceX = 0;
+                        }
+                        if (newFaceY < 0)
+                        {
+                            newFaceY = 0;
+                        }
                         Int32Rect r = new Int32Rect((int)newFaceX, (int)newFaceY, (int)newFaceWidth, (int)newFaceHeight);
 
                         BitmapSource topHalf = new CroppedBitmap(baseImage, r);
