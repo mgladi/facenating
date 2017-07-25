@@ -42,6 +42,7 @@ using OpenCvSharp.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -51,6 +52,8 @@ using System.Windows.Navigation;
 using VideoFrameAnalyzer;
 using GameSystem;
 using System.Threading;
+using System.Windows.Media;
+using Point = System.Windows.Point;
 
 namespace LiveCameraSample
 {
@@ -74,9 +77,14 @@ namespace LiveCameraSample
         private const int NumOfRounds = 4;
         private IRound round = null;
         private int roundNumber;
+        private EmotionType emotion; // temp
+        private double amount; // amount
+        private const int RoundTimeInSeconds = 30;
 
+        private bool gameStarted = false;
         public enum AppMode
         {
+            Participants,
             Faces,
             Emotions,
             EmotionsWithClientFaceDetect,
@@ -98,8 +106,10 @@ namespace LiveCameraSample
                 if(round == null)
                 {
                     roundNumber = 1;
-                    round = new RoundEmotion(EmotionType.Surprise, 0.7);
-                    Properties.Settings.Default.AutoStopTime = new TimeSpan(0,0,0,30); //TEMP
+                    emotion = EmotionType.Surprise;
+                    amount = 0.7;
+                    round = new RoundEmotion(emotion, amount);
+                    Properties.Settings.Default.AutoStopTime = new TimeSpan(0,0,0, RoundTimeInSeconds); //TEMP
                 }
                 if (_mode == AppMode.EmotionsWithClientFaceDetect)
                 {
@@ -130,8 +140,10 @@ namespace LiveCameraSample
                     if (roundNumber < NumOfRounds)
                     {
                         roundNumber++;
-                        round = new RoundEmotion(EmotionType.Surprise, 0.7);
-                        Properties.Settings.Default.AutoStopTime = new TimeSpan(30);
+                        emotion = EmotionType.Surprise;
+                        amount = 0.7;
+                        round = new RoundEmotion(emotion, amount);
+                        Properties.Settings.Default.AutoStopTime = new TimeSpan(0,0,0,RoundTimeInSeconds);
                         _startTime = DateTime.Now;
                     }
                     else
@@ -196,6 +208,25 @@ namespace LiveCameraSample
         /// <returns> A <see cref="Task{LiveCameraResult}"/> representing the asynchronous API call,
         ///     and containing the faces returned by the API. </returns>
         private async Task<LiveCameraResult> FacesAnalysisFunction(VideoFrame frame)
+        {
+            // Encode image. 
+            var jpg = frame.Image.ToMemoryStream(".jpg", s_jpegParams);
+            // Submit image to API. 
+            var attrs = new List<FaceAttributeType> { FaceAttributeType.Age,
+                FaceAttributeType.Gender, FaceAttributeType.HeadPose };
+            var faces = await _faceClient.DetectAsync(jpg, returnFaceAttributes: attrs);
+            // Count the API call. 
+            Properties.Settings.Default.FaceAPICallCount++;
+            // Output. 
+            return new LiveCameraResult { Faces = faces };
+        }
+
+
+        /// <summary> Function which submits a frame to the Face API. </summary>
+        /// <param name="frame"> The video frame to submit. </param>
+        /// <returns> A <see cref="Task{LiveCameraResult}"/> representing the asynchronous API call,
+        ///     and containing the faces returned by the API. </returns>
+        private async Task<LiveCameraResult> ParticipantsAnalysisFunction(VideoFrame frame)
         {
             // Encode image. 
             var jpg = frame.Image.ToMemoryStream(".jpg", s_jpegParams);
@@ -318,8 +349,21 @@ namespace LiveCameraSample
                     MatchAndReplaceFaceRectangles(result.Faces, clientFaces);
                 }
 
-                visImage = Visualization.DrawFaces(visImage, result.Faces, result.EmotionScores, result.CelebrityNames);
-                visImage = Visualization.DrawTags(visImage, result.Tags);
+                if (this.gameStarted)
+                {
+                    // Compute round score
+                    List<int> scores = round.ComputeFrameScorePerPlayer(result);
+
+                    visImage = Visualization.DrawSomething(visImage, emotion + ":" + amount, new Point(0, 0));
+                    visImage = Visualization.DrawScores(visImage, scores);
+
+                    visImage = Visualization.DrawFaces(visImage, result.Faces, result.EmotionScores, result.CelebrityNames);
+                    visImage = Visualization.DrawTags(visImage, result.Tags);
+                }
+                else
+                {
+                    visImage = Visualization.DrawParticipants(visImage, result.Faces);
+                }
             }
 
             return visImage;
@@ -362,8 +406,12 @@ namespace LiveCameraSample
             var comboBox = sender as ComboBox;
             var modes = (AppMode[])Enum.GetValues(typeof(AppMode));
             _mode = modes[comboBox.SelectedIndex];
+
             switch (_mode)
             {
+                case AppMode.Participants:
+                    _grabber.AnalysisFunction = ParticipantsAnalysisFunction;
+                    break;
                 case AppMode.Faces:
                     _grabber.AnalysisFunction = FacesAnalysisFunction;
                     break;
