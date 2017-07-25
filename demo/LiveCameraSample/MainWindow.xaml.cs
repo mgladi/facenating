@@ -77,12 +77,12 @@ namespace LiveCameraSample
         private DateTime _startTime;
         private const int NumOfRounds = 4;
         private IRound round = null;
-        private int roundNumber;
+        private int roundNumber = 0;
         private EmotionType emotion; // temp
         private double amount; // amount
         private const int RoundTimeInSeconds = 30;
 
-        private bool newRound = true;
+        private bool newRound = false;
 
         private bool gameStarted = false;
         public enum AppMode
@@ -140,12 +140,15 @@ namespace LiveCameraSample
                 }));
 
                 // See if auto-stop should be triggered. 
-                if (Properties.Settings.Default.AutoStopEnabled && (DateTime.Now - _startTime) > Properties.Settings.Default.AutoStopTime)
+                if (gameStarted == true &&  Properties.Settings.Default.AutoStopEnabled && (DateTime.Now - _startTime) > Properties.Settings.Default.AutoStopTime)
                 {
                     if (roundNumber < NumOfRounds)
                     {
-                        nextRound();
-                        _startTime = DateTime.Now;
+                        if (roundNumber != 0)
+                        {
+                            nextRound();
+                            _startTime = DateTime.Now;
+                        }
                     }
                     else
                     {
@@ -469,9 +472,6 @@ namespace LiveCameraSample
             // Reset message. 
             MessageArea.Text = "";
 
-            // Record start time, for auto-stop
-            _startTime = DateTime.Now;
-
             _grabber.StartProcessingCameraAsync(0).Wait();
         }
 
@@ -565,6 +565,9 @@ namespace LiveCameraSample
             var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
             byte[] streamBytes = ReadFully(otherJpg);
 
+            nextRound();
+            button.Visibility = Visibility.Hidden;
+
             FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
             await faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
 
@@ -579,7 +582,8 @@ namespace LiveCameraSample
                 await faceClient.TrainPersonGroupAsync(currentGroupId);
             }
             this.gameStarted = true;
-            nextRound();
+            // Record start time, for auto-stop
+            _startTime = DateTime.Now;
         }
 
         private void nextRound()
@@ -601,6 +605,7 @@ namespace LiveCameraSample
 
             updateMode(AppMode.Emotions);
             Properties.Settings.Default.AutoStopTime = new TimeSpan(0, 0, 0, RoundTimeInSeconds);
+            newRound = true;
         }
 
         public byte[] ReadFully(Stream input)
