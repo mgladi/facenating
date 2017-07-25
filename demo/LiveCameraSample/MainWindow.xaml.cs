@@ -96,7 +96,7 @@ namespace LiveCameraSample
         }
 
         private string currentGroupName = Guid.NewGuid().ToString();
-        private string currentGroupId;
+        private string currentGroupId = null;
 
         public MainWindow()
         {
@@ -262,47 +262,14 @@ namespace LiveCameraSample
         ///     and containing the emotions returned by the API. </returns>
         private async Task<LiveCameraResult> EmotionAnalysisFunction(VideoFrame frame)
         {
-            // Encode image. 
             var jpg = frame.Image.ToMemoryStream(".jpg", s_jpegParams);
-            // Submit image to API. 
-            Emotion[] emotions = null;
+            var attrs = new List<FaceAttributeType> { FaceAttributeType.Emotion };
+            Face[] faces = await _faceClient.DetectAsync(jpg, returnFaceAttributes: attrs);
 
-            // See if we have local face detections for this image.
-            var localFaces = (OpenCvSharp.Rect[])frame.UserData;
-            if (localFaces == null)
-            {
-                // If localFaces is null, we're not performing local face detection.
-                // Use Cognigitve Services to do the face detection.
-                Properties.Settings.Default.EmotionAPICallCount++;
-                emotions = await _emotionClient.RecognizeAsync(jpg);
-            }
-            else if (localFaces.Count() > 0)
-            {
-                // If we have local face detections, we can call the API with them. 
-                // First, convert the OpenCvSharp rectangles. 
-                var rects = localFaces.Select(
-                    f => new Microsoft.ProjectOxford.Common.Rectangle
-                    {
-                        Left = f.Left,
-                        Top = f.Top,
-                        Width = f.Width,
-                        Height = f.Height
-                    });
-                Properties.Settings.Default.EmotionAPICallCount++;
-                emotions = await _emotionClient.RecognizeAsync(jpg, rects.ToArray());
-            }
-            else
-            {
-                // Local face detection found no faces; don't call Cognitive Services.
-                emotions = new Emotion[0];
-            }
-
-            // Output. 
             return new LiveCameraResult
             {
-                Faces = emotions.Select(e => CreateFace(e.FaceRectangle)).ToArray(),
-                // Extract emotion scores from results. 
-                EmotionScores = emotions.Select(e => e.Scores).ToArray()
+                Faces = faces,
+                EmotionScores = faces.Select(f => f.FaceAttributes.Emotion).ToArray()
             };
         }
 
