@@ -50,7 +50,7 @@ namespace LiveCameraSample
             
             var scoresDictionary = new Dictionary<Guid, int>();
 
-            if (apiResult.Identities != null)
+            if (apiResult.Identities != null && apiResult.Identities.Count > 0)
             {
                 KeyValuePair<string, float> currDominantEmotion;
                 Guid personId;
@@ -63,7 +63,7 @@ namespace LiveCameraSample
                     if (currDominantEmotion.Key == this.targetEmotion.ToString() &&
                         delta <= Delta)
                     {
-                        scoresDictionary[personId] = 10 * (int)Math.Round(Delta - delta, 1);
+                        scoresDictionary[personId] = 10 * (int)Math.Round(1 + 10*(Delta - delta), 1);
                     }
                     else
                     {
