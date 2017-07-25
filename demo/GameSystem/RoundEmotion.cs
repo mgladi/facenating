@@ -53,15 +53,17 @@ namespace LiveCameraSample
             if (apiResult.Identities != null)
             {
                 KeyValuePair<string, float> currDominantEmotion;
+                Guid personId;
 
                 foreach (var item in apiResult.Identities)
                 {
-                    Guid personId = item.Key;
+                    personId = item.Key;
                     currDominantEmotion = getDominantEmotion(apiResult.Identities[personId].FaceAttributes.Emotion);
+                    double delta = Math.Abs(currDominantEmotion.Value - this.targetScore);
                     if (currDominantEmotion.Key == this.targetEmotion.ToString() &&
-                        Math.Abs(currDominantEmotion.Value - this.targetScore) <= Delta)
+                        delta <= Delta)
                     {
-                        scoresDictionary[personId] = 10;
+                        scoresDictionary[personId] = 10 * (int)Math.Round(Delta - delta, 1);
                     }
                     else
                     {
@@ -76,7 +78,7 @@ namespace LiveCameraSample
         private double getRandomScore()
         {
             Random random = new Random();
-            return 0.4 + (random.Next(7) / 10.0); // random in [0.4, 1.0]
+            return 0.5 + (random.Next(6) / 10.0); // random in [0.5, 1.0]
         }
 
         private EmotionType getRandomEmotion()
@@ -98,30 +100,6 @@ namespace LiveCameraSample
                 }
             }
             return maxPair;
-        }
-
-        private float getRelevantEmotionScoreFromScores(EmotionScores scores, EmotionType emotionType)
-        {
-            switch (emotionType)
-            {
-                case EmotionType.Anger:
-                    return scores.Anger;
-                case EmotionType.Contempt:
-                    return scores.Contempt;
-                case EmotionType.Disgust:
-                    return scores.Disgust;
-                case EmotionType.Fear:
-                    return scores.Fear;
-                case EmotionType.Happiness:
-                    return scores.Happiness;
-                case EmotionType.Neutral:
-                    return scores.Neutral;
-                case EmotionType.Sadness:
-                    return scores.Sadness;
-                case EmotionType.Surprise:
-                    return scores.Surprise;
-            }
-            return 0;
         }
     }
 }
