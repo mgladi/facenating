@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveCameraSample", "LiveCameraSample\LiveCameraSample.csproj", "{5B40977E-E8FA-41BC-8F0A-6D6FDE237571}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoFrameAnalyzer", "VideoFrameAnalyzer\VideoFrameAnalyzer.csproj", "{BEC7DA78-C953-4A72-924F-2749D1F9F18B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicConsoleSample", "BasicConsoleSample\BasicConsoleSample.csproj", "{0638DEF8-9613-4599-9335-7A2438B447DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameSystem", "GameSystem\GameSystem.csproj", "{CE50B26A-3886-4955-AEA4-426BE1EAE313}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{0638DEF8-9613-4599-9335-7A2438B447DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0638DEF8-9613-4599-9335-7A2438B447DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0638DEF8-9613-4599-9335-7A2438B447DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE50B26A-3886-4955-AEA4-426BE1EAE313}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE50B26A-3886-4955-AEA4-426BE1EAE313}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE50B26A-3886-4955-AEA4-426BE1EAE313}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE50B26A-3886-4955-AEA4-426BE1EAE313}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -181,7 +181,7 @@ namespace VideoFrameAnalyzer
             Width = _reader.FrameWidth;
             Height = _reader.FrameHeight;
 
-            StartProcessing(TimeSpan.FromSeconds(1 / _fps), () => DateTime.Now);
+            StartProcessing(TimeSpan.FromSeconds(1 / _fps), () => DateTime.Now + new TimeSpan(0,0,30));
 
             _currCameraIdx = cameraIndex;
         }

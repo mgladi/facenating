@@ -107,7 +107,6 @@
     </ApplicationDefinition>
     <Compile Include="Aggregation.cs" />
     <Compile Include="CelebritiesResult.cs" />
-    <Compile Include="LiveCameraResult.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Visualization.cs" />
     <Page Include="MainWindow.xaml">
@@ -157,6 +156,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GameSystem\GameSystem.csproj">
+      <Project>{ce50b26a-3886-4955-aea4-426be1eae313}</Project>
+      <Name>GameSystem</Name>
+    </ProjectReference>
     <ProjectReference Include="..\VideoFrameAnalyzer\VideoFrameAnalyzer.csproj">
       <Project>{bec7da78-c953-4a72-924f-2749d1f9f18b}</Project>
       <Name>VideoFrameAnalyzer</Name>
