@@ -154,20 +154,20 @@ namespace LiveCameraSample
                         gameState = GameState.Game;
                     }
                     else if (gameState == GameState.Game)
-                    {
+                        {
                         currentTimerTask = TimeSpan.FromSeconds(6);
                         currentTimeTaskStart = DateTime.Now;
                         gameState = GameState.RoundEnd;
-                    }
+                        }
 
                     else if (gameState == GameState.RoundEnd)
                     {
                         if (roundNumber == NumOfRounds)
                         {
                             _grabber.StopProcessingAsync();
-                        }
-                        else
-                        {
+                    }
+                    else
+                    {
                             nextRound();
                         }
                     }
@@ -282,47 +282,18 @@ namespace LiveCameraSample
         ///     and containing the emotions returned by the API. </returns>
         private async Task<LiveCameraResult> EmotionAnalysisFunction(VideoFrame frame)
         {
-            // Encode image. 
             var jpg = frame.Image.ToMemoryStream(".jpg", s_jpegParams);
-            // Submit image to API. 
-            Emotion[] emotions = null;
+            var attrs = new List<FaceAttributeType> { FaceAttributeType.Emotion };
+            Face[] faces = await _faceClient.DetectAsync(jpg, returnFaceAttributes: attrs);
+            Guid[] faceIds = faces.Select(face => face.FaceId).ToArray();
 
-            // See if we have local face detections for this image.
-            var localFaces = (OpenCvSharp.Rect[])frame.UserData;
-            if (localFaces == null)
-            {
-                // If localFaces is null, we're not performing local face detection.
-                // Use Cognigitve Services to do the face detection.
-                Properties.Settings.Default.EmotionAPICallCount++;
-                emotions = await _emotionClient.RecognizeAsync(jpg);
-            }
-            else if (localFaces.Count() > 0)
-            {
-                // If we have local face detections, we can call the API with them. 
-                // First, convert the OpenCvSharp rectangles. 
-                var rects = localFaces.Select(
-                    f => new Microsoft.ProjectOxford.Common.Rectangle
-                    {
-                        Left = f.Left,
-                        Top = f.Top,
-                        Width = f.Width,
-                        Height = f.Height
-                    });
-                Properties.Settings.Default.EmotionAPICallCount++;
-                emotions = await _emotionClient.RecognizeAsync(jpg, rects.ToArray());
-            }
-            else
-            {
-                // Local face detection found no faces; don't call Cognitive Services.
-                emotions = new Emotion[0];
-            }
+            IdentifyResult[] identities = await _faceClient.IdentifyAsync(currentGroupId, faceIds);
 
-            // Output. 
             return new LiveCameraResult
             {
-                Faces = emotions.Select(e => CreateFace(e.FaceRectangle)).ToArray(),
-                // Extract emotion scores from results. 
-                EmotionScores = emotions.Select(e => e.Scores).ToArray()
+                Identites = identities,
+                Faces = faces,
+                EmotionScores = faces.Select(f => f.FaceAttributes.Emotion).ToArray()
             };
         }
 
@@ -500,7 +471,10 @@ namespace LiveCameraSample
             Properties.Settings.Default.VisionAPIKey = Properties.Settings.Default.VisionAPIKey.Trim();
 
             // Create API clients. 
-            _faceClient = new FaceServiceClient(Properties.Settings.Default.FaceAPIKey, Properties.Settings.Default.FaceAPIHost);
+
+            _faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
+
+            //_faceClient = new FaceServiceClient(Properties.Settings.Default.FaceAPIKey, Properties.Settings.Default.FaceAPIHost);
             _emotionClient = new EmotionServiceClient(Properties.Settings.Default.EmotionAPIKey, Properties.Settings.Default.EmotionAPIHost);
             _visionClient = new VisionServiceClient(Properties.Settings.Default.VisionAPIKey, Properties.Settings.Default.VisionAPIHost);
 
@@ -608,18 +582,18 @@ namespace LiveCameraSample
 
             nextRound();
 
-            FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
-            await faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
+            //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
+            await _faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
 
             if (currentParticipants.Length > 1)
             {
                 for (int i = 0; i < currentParticipants.Length; i++)
                 {
-                    CreatePersonResult person = await faceClient.CreatePersonAsync(currentGroupId, i.ToString());
+                    CreatePersonResult person = await _faceClient.CreatePersonAsync(currentGroupId, i.ToString());
                     MemoryStream s = new MemoryStream(streamBytes);
-                    var addedPersistedPerson = await faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, s, "userData", currentParticipants[i].FaceRectangle);
+                    var addedPersistedPerson = await _faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, s, "userData", currentParticipants[i].FaceRectangle);
                 }
-                await faceClient.TrainPersonGroupAsync(currentGroupId);
+                await _faceClient.TrainPersonGroupAsync(currentGroupId);
             }
         }
 

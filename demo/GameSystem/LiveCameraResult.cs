@@ -31,14 +31,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // 
 
-using System;
-
 namespace GameSystem
 {
     // Class to hold all possible result types. 
     public class LiveCameraResult
     {
-        public Guid[] Guids { get; set; } = null;
+        public Microsoft.ProjectOxford.Face.Contract.IdentifyResult[] Identites { get; set; } = null;
         public Microsoft.ProjectOxford.Face.Contract.Face[] Faces { get; set; } = null;
         public Microsoft.ProjectOxford.Common.Contract.EmotionScores[] EmotionScores { get; set; } = null;
         public string[] CelebrityNames { get; set; } = null;
