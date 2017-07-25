@@ -10,6 +10,6 @@ namespace LiveCameraSample
     public interface IRound
     {
         string GetRoundDescription();
-        List<int> ComputeFrameScorePerPlayer(LiveCameraResult result);
+        Dictionary<Guid, int> ComputeFrameScorePerPlayer(LiveCameraResult result);
     }
 }

@@ -44,6 +44,7 @@ using Microsoft.ProjectOxford.Common.Contract;
 using Microsoft.ProjectOxford.Emotion.Contract;
 using Microsoft.ProjectOxford.Face.Contract;
 using Microsoft.ProjectOxford.Vision.Contract;
+using Point = System.Windows.Point;
 
 namespace LiveCameraSample
 {
@@ -52,7 +53,7 @@ namespace LiveCameraSample
         private static SolidColorBrush s_lineBrush = new SolidColorBrush(new System.Windows.Media.Color { R = 255, G = 185, B = 0, A = 255 });
         private static Typeface s_typeface = new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
         
-        private static BitmapSource DrawOverlay(BitmapSource baseImage, bool drawVideo, Action<DrawingContext, double> drawAction)
+        private static BitmapSource DrawOverlay(BitmapSource baseImage, Action<DrawingContext, double> drawAction, bool drawVideo = false)
         {
             double annotationScale = baseImage.PixelHeight / 320;
 
@@ -132,7 +133,7 @@ namespace LiveCameraSample
                 }
             };
 
-            return DrawOverlay(baseImage, false, drawAction);
+            return DrawOverlay(baseImage, drawAction);
         }
 
         public static BitmapSource DrawTags(BitmapSource baseImage, Tag[] tags)
@@ -160,7 +161,35 @@ namespace LiveCameraSample
                 }
             };
 
-            return DrawOverlay(baseImage, true, drawAction);
+            return DrawOverlay(baseImage, drawAction, true);
+        }
+
+        public static BitmapSource DrawScores(BitmapSource baseImage, Dictionary<Guid, int> scores)
+        {
+            if (scores == null)
+            {
+                return baseImage;
+            }
+
+            Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
+            {
+                double y = 0;
+                foreach (var score in scores.Values) //TODO
+                {
+                    // Create formatted text--in a particular font at a particular size
+                    FormattedText ft = new FormattedText(score + "pts",
+                        CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
+                        42 * annotationScale, Brushes.Black);
+                    // Instead of calling DrawText (which can only draw the text in a solid colour), we
+                    // convert to geometry and use DrawGeometry, which allows us to add an outline. 
+                    var geom = ft.BuildGeometry(new System.Windows.Point(10 * annotationScale, y));
+                    drawingContext.DrawGeometry(s_lineBrush, new Pen(Brushes.Black, 2 * annotationScale), geom);
+                    // Move line down
+                    y += 42 * annotationScale;
+                }
+            };
+
+            return DrawOverlay(baseImage, drawAction);
         }
 
         public static BitmapSource DrawFaces(BitmapSource baseImage, Microsoft.ProjectOxford.Face.Contract.Face[] faces, EmotionScores[] emotionScores, string[] celebName)
@@ -228,7 +257,35 @@ namespace LiveCameraSample
                 }
             };
 
-            return DrawOverlay(baseImage, true, drawAction);
+            return DrawOverlay(baseImage, drawAction, true);
         }
+
+        public static BitmapSource DrawSomething(BitmapSource baseImage, string text, Point location)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return baseImage;
+            }
+
+            Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
+            {
+                FormattedText ft = new FormattedText(text,
+                    CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
+                    16 * annotationScale, Brushes.Black);
+
+                var pad = 3 * annotationScale;
+
+                var ypad = pad;
+                var xpad = pad + 4 * annotationScale;
+                var rect = ft.BuildHighlightGeometry(location).GetRenderBounds(null);
+                rect.Inflate(xpad, ypad);
+
+                drawingContext.DrawRectangle(s_lineBrush, null, rect);
+                drawingContext.DrawText(ft, location);
+            };
+
+            return DrawOverlay(baseImage, drawAction);
+        }
+
     }
 }

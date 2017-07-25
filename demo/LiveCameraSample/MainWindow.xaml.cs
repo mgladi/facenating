@@ -42,6 +42,7 @@ using OpenCvSharp.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -51,6 +52,8 @@ using System.Windows.Navigation;
 using VideoFrameAnalyzer;
 using GameSystem;
 using System.Threading;
+using System.Windows.Media;
+using Point = System.Windows.Point;
 using System.IO;
 
 namespace LiveCameraSample
@@ -75,6 +78,9 @@ namespace LiveCameraSample
         private const int NumOfRounds = 4;
         private IRound round = null;
         private int roundNumber;
+        private EmotionType emotion; // temp
+        private double amount; // amount
+        private const int RoundTimeInSeconds = 30;
 
         private bool gameStarted = false;
         public enum AppMode
@@ -105,8 +111,10 @@ namespace LiveCameraSample
                 if(round == null)
                 {
                     roundNumber = 1;
-                    round = new RoundEmotion(EmotionType.Surprise, 0.7);
-                    Properties.Settings.Default.AutoStopTime = new TimeSpan(0,0,0,30); //TEMP
+                    emotion = EmotionType.Surprise;
+                    amount = 0.7;
+                    round = new RoundEmotion(emotion, amount);
+                    Properties.Settings.Default.AutoStopTime = new TimeSpan(0,0,0, RoundTimeInSeconds); //TEMP
                 }
                 if (_mode == AppMode.EmotionsWithClientFaceDetect)
                 {
@@ -137,8 +145,10 @@ namespace LiveCameraSample
                     if (roundNumber < NumOfRounds)
                     {
                         roundNumber++;
-                        round = new RoundEmotion(EmotionType.Surprise, 0.7);
-                        Properties.Settings.Default.AutoStopTime = new TimeSpan(30);
+                        emotion = EmotionType.Surprise;
+                        amount = 0.7;
+                        round = new RoundEmotion(emotion, amount);
+                        Properties.Settings.Default.AutoStopTime = new TimeSpan(0,0,0,RoundTimeInSeconds);
                         _startTime = DateTime.Now;
                     }
                     else
@@ -360,6 +370,12 @@ namespace LiveCameraSample
 
                 if (this.gameStarted)
                 {
+                    // Compute round score
+                    Dictionary<Guid, int> scores = round.ComputeFrameScorePerPlayer(result);
+
+                    visImage = Visualization.DrawSomething(visImage, emotion + ":" + amount, new Point(0, 0));
+                    visImage = Visualization.DrawScores(visImage, scores);
+
                     visImage = Visualization.DrawFaces(visImage, result.Faces, result.EmotionScores, result.CelebrityNames);
                     visImage = Visualization.DrawTags(visImage, result.Tags);
                 }
@@ -409,6 +425,7 @@ namespace LiveCameraSample
             var comboBox = sender as ComboBox;
             var modes = (AppMode[])Enum.GetValues(typeof(AppMode));
             _mode = modes[comboBox.SelectedIndex];
+
             switch (_mode)
             {
                 case AppMode.Participants:
