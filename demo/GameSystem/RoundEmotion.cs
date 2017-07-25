@@ -46,28 +46,25 @@ namespace LiveCameraSample
             
             var scoresDictionary = new Dictionary<Guid, int>();
 
-            /*if (apiResult.Guids != null && apiResult.EmotionScores != null)
+            if (apiResult.Identities != null)
             {
-                int currScore;
                 KeyValuePair<string, float> currDominantEmotion;
 
-                for (int i = 0; i < apiResult.Guids.Length; i++)
+                foreach (var item in apiResult.Identities)
                 {
-                    Guid guid = apiResult.Guids[i];
-                    currScore = 0;
-                    currDominantEmotion = getDominantEmotion(apiResult.EmotionScores[i]);
+                    Guid personId = item.Key;
+                    currDominantEmotion = getDominantEmotion(apiResult.Identities[personId].FaceAttributes.Emotion);
                     if (currDominantEmotion.Key == this.targetEmotion.ToString() &&
                         Math.Abs(currDominantEmotion.Value - this.targetScore) <= Delta)
                     {
-                        scoresDictionary[guid] = 10;
+                        scoresDictionary[personId] = 10;
                     }
                     else
                     {
-                        scoresDictionary[guid] = 0;
+                        scoresDictionary[personId] = 0;
                     }
                 }
             }
-            */
 
             return scoresDictionary;
         }

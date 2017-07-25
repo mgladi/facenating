@@ -107,7 +107,7 @@ namespace LiveCameraSample
         private TimeSpan currentTimerTask = TimeSpan.FromSeconds(6);
         private DateTime currentTimeTaskStart;
         private GameState gameState = GameState.Participants;
-
+        private ScoringSystem scoringSystem = new ScoringSystem();
         public MainWindow()
         {
             currentGroupId = currentGroupName;
@@ -152,6 +152,7 @@ namespace LiveCameraSample
                         currentTimerTask = TimeSpan.FromSeconds(15);
                         currentTimeTaskStart = DateTime.Now;
                         gameState = GameState.Game;
+
                     }
                     else if (gameState == GameState.Game)
                         {
@@ -165,9 +166,9 @@ namespace LiveCameraSample
                         if (roundNumber == NumOfRounds)
                         {
                             _grabber.StopProcessingAsync();
-                    }
-                    else
-                    {
+                        }
+                        else
+                        {
                             nextRound();
                         }
                     }
@@ -369,11 +370,11 @@ namespace LiveCameraSample
                 {
                     // Compute round score
                     Dictionary<Guid, int> scores = round.ComputeFrameScorePerPlayer(result);
-
+                    scoringSystem.AddToCurrentRound(scores);
                     visImage = Visualization.DrawSomething(visImage, emotion + ":" + amount, new Point(0, 0));
                     visImage = Visualization.DrawScores(visImage, scores);
 
-                    visImage = Visualization.DrawFaces(visImage, result.Faces, result.EmotionScores, result.CelebrityNames);
+                    visImage = Visualization.DrawFaces(visImage, result.Identities, scoringSystem);
                     visImage = Visualization.DrawTags(visImage, result.Tags);
                 }
                 else if (this.gameState == GameState.Participants)
@@ -615,6 +616,7 @@ namespace LiveCameraSample
             }
 
             updateMode(AppMode.Emotions);
+            scoringSystem.CreateNewRound();
             this.gameState = GameState.RoundBegin;
             this.currentTimerTask = TimeSpan.FromSeconds(6);
             this.currentTimeTaskStart = DateTime.Now;
