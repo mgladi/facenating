@@ -21,14 +21,19 @@ namespace LiveCameraSample
     }
     public class RoundEmotion: IRound
     {
-        public RoundEmotion(EmotionType emotionType, double targetScore)
+        public RoundEmotion() : this(null, null){}
+
+        public RoundEmotion(EmotionType emotionType) : this(emotionType, null){}
+
+        public RoundEmotion(EmotionType? emotionType, double? targetScore)
         {
-            this.targetEmotion = emotionType;
-            this.targetScore = targetScore;
+            this.targetEmotion = emotionType ?? getRandomEmotion();
+            this.targetScore = targetScore ?? getRandomScore();
         }
 
-        private EmotionType targetEmotion;
-        private double targetScore;
+        public EmotionType targetEmotion { get; private set; }
+        public double targetScore { get; private set; }
+        private const double Delta = 0.3;
 
         public string GetRoundDescription()
         {
@@ -45,7 +50,7 @@ namespace LiveCameraSample
                 currScore = 0;
                 currDominantEmotion = getDominantEmotion(userEmotionScores);
                 if (currDominantEmotion.Key == this.targetEmotion.ToString() &&
-                    Math.Abs(currDominantEmotion.Value - this.targetScore) <= 0.1)
+                    Math.Abs(currDominantEmotion.Value - this.targetScore) <= Delta)
                 {
                    currScore = 10;
                 }
@@ -55,9 +60,31 @@ namespace LiveCameraSample
             return frameScores;
         }
 
+        private double getRandomScore()
+        {
+            Random random = new Random();
+            return 0.4 + (random.Next(7) / 10.0); // random in [0.4, 1.0]
+        }
+
+        private EmotionType getRandomEmotion()
+        {
+            Random random = new Random();
+            Array values = Enum.GetValues(typeof(EmotionType));
+            return (EmotionType) values.GetValue(random.Next(values.Length));
+        }
+
         private KeyValuePair<string, float> getDominantEmotion(EmotionScores scores)
         {
-            return scores.ToRankedList().Max();
+            var scoreList = scores.ToRankedList();
+            KeyValuePair<string, float> maxPair = scoreList.First();
+            foreach (var score in scoreList)
+            {
+                if (score.Value > maxPair.Value)
+                {
+                    maxPair = score;
+                }
+            }
+            return maxPair;
         }
 
         private float getRelevantEmotionScoreFromScores(EmotionScores scores, EmotionType emotionType)
