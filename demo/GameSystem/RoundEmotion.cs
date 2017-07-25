@@ -46,7 +46,7 @@ namespace LiveCameraSample
             
             var scoresDictionary = new Dictionary<Guid, int>();
 
-            if (apiResult.Guids != null && apiResult.EmotionScores != null)
+            /*if (apiResult.Guids != null && apiResult.EmotionScores != null)
             {
                 int currScore;
                 KeyValuePair<string, float> currDominantEmotion;
@@ -67,7 +67,7 @@ namespace LiveCameraSample
                     }
                 }
             }
-
+            */
 
             return scoresDictionary;
         }
