@@ -213,6 +213,7 @@ namespace LiveCameraSample
 
             // Create local face detector. 
             _localFaceDetector.Load("Data/haarcascade_frontalface_alt2.xml");
+
         }
 
         /// <summary> Function which submits a frame to the Face API. </summary>
@@ -416,23 +417,6 @@ namespace LiveCameraSample
             return Visualization.DrawRound(bitmap, roundNum);
         }
 
-        /// <summary> Populate CameraList in the UI, once it is loaded. </summary>
-        /// <param name="sender"> Source of the event. </param>
-        /// <param name="e">      Routed event information. </param>
-        private void CameraList_Loaded(object sender, RoutedEventArgs e)
-        {
-            int numCameras = _grabber.GetNumCameras();
-
-            if (numCameras == 0)
-            {
-                MessageArea.Text = "No cameras found!";
-            }
-
-            var comboBox = sender as ComboBox;
-            comboBox.ItemsSource = Enumerable.Range(0, numCameras).Select(i => string.Format("Camera {0}", i + 1));
-            comboBox.SelectedIndex = 0;
-        }
-
         /// <summary> Populate ModeList in the UI, once it is loaded. </summary>
         /// <param name="sender"> Source of the event. </param>
         /// <param name="e">      Routed event information. </param>
@@ -483,13 +467,8 @@ namespace LiveCameraSample
             }
         }
 
-        private async void StartButton_Click(object sender, RoutedEventArgs e)
+        private void StartButton()
         {
-            if (!CameraList.HasItems)
-            {
-                MessageArea.Text = "No cameras found; cannot start processing";
-                return;
-            }
 
             // Clean leading/trailing spaces in API keys. 
             Properties.Settings.Default.FaceAPIKey = Properties.Settings.Default.FaceAPIKey.Trim();
@@ -510,12 +489,7 @@ namespace LiveCameraSample
             // Record start time, for auto-stop
             _startTime = DateTime.Now;
 
-            await _grabber.StartProcessingCameraAsync(CameraList.SelectedIndex);
-        }
-
-        private async void StopButton_Click(object sender, RoutedEventArgs e)
-        {
-            await _grabber.StopProcessingAsync();
+            _grabber.StartProcessingCameraAsync(0).Wait();
         }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
@@ -637,6 +611,11 @@ namespace LiveCameraSample
                 }
                 return ms.ToArray();
             }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            StartButton();
         }
     }
 }
