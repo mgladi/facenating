@@ -395,9 +395,10 @@ namespace LiveCameraSample
         {
             var bitmap = VisualizeRound();
             string s = "";
+            int i = 1;
             foreach (var item in scoringSystem.TotalScore)
             {
-                s += item.Key + ": " + item.Value + "\n";
+                s += i++ + ": " + item.Value + "\n";
             }
             return Visualization.DrawRound(bitmap, "End round " + roundNumber, s);
 
