@@ -407,9 +407,6 @@ namespace LiveCameraSample
             var modes = (AppMode[])Enum.GetValues(typeof(AppMode));
             _mode = modes[comboBox.SelectedIndex];
 
-            // Temp
-            _mode = AppMode.Emotions;
-
             switch (_mode)
             {
                 case AppMode.Participants:

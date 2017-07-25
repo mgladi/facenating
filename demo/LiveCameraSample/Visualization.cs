@@ -53,7 +53,7 @@ namespace LiveCameraSample
         private static SolidColorBrush s_lineBrush = new SolidColorBrush(new System.Windows.Media.Color { R = 255, G = 185, B = 0, A = 255 });
         private static Typeface s_typeface = new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
         
-        private static BitmapSource DrawOverlay(BitmapSource baseImage, bool drawVideo, Action<DrawingContext, double> drawAction)
+        private static BitmapSource DrawOverlay(BitmapSource baseImage, Action<DrawingContext, double> drawAction, bool drawVideo = false)
         {
             double annotationScale = baseImage.PixelHeight / 320;
 
@@ -133,7 +133,7 @@ namespace LiveCameraSample
                 }
             };
 
-            return DrawOverlay(baseImage, false, drawAction);
+            return DrawOverlay(baseImage, drawAction);
         }
 
         public static BitmapSource DrawTags(BitmapSource baseImage, Tag[] tags)
@@ -161,7 +161,7 @@ namespace LiveCameraSample
                 }
             };
 
-            return DrawOverlay(baseImage, true, drawAction);
+            return DrawOverlay(baseImage, drawAction, true);
         }
 
         public static BitmapSource DrawScores(BitmapSource baseImage, List<int> scores)
@@ -257,7 +257,7 @@ namespace LiveCameraSample
                 }
             };
 
-            return DrawOverlay(baseImage, true, drawAction);
+            return DrawOverlay(baseImage, drawAction, true);
         }
 
         public static BitmapSource DrawSomething(BitmapSource baseImage, string text, Point location)
