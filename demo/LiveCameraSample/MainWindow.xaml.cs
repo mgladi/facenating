@@ -268,9 +268,13 @@ namespace LiveCameraSample
             var jpg = frame.Image.ToMemoryStream(".jpg", s_jpegParams);
             var attrs = new List<FaceAttributeType> { FaceAttributeType.Emotion };
             Face[] faces = await _faceClient.DetectAsync(jpg, returnFaceAttributes: attrs);
+            Guid[] faceIds = faces.Select(face => face.FaceId).ToArray();
+
+            IdentifyResult[] identities = await _faceClient.IdentifyAsync(currentGroupId, faceIds);
 
             return new LiveCameraResult
             {
+                Identites = identities,
                 Faces = faces,
                 EmotionScores = faces.Select(f => f.FaceAttributes.Emotion).ToArray()
             };
@@ -429,7 +433,10 @@ namespace LiveCameraSample
             Properties.Settings.Default.VisionAPIKey = Properties.Settings.Default.VisionAPIKey.Trim();
 
             // Create API clients. 
-            _faceClient = new FaceServiceClient(Properties.Settings.Default.FaceAPIKey, Properties.Settings.Default.FaceAPIHost);
+
+            _faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
+
+            //_faceClient = new FaceServiceClient(Properties.Settings.Default.FaceAPIKey, Properties.Settings.Default.FaceAPIHost);
             _emotionClient = new EmotionServiceClient(Properties.Settings.Default.EmotionAPIKey, Properties.Settings.Default.EmotionAPIHost);
             _visionClient = new VisionServiceClient(Properties.Settings.Default.VisionAPIKey, Properties.Settings.Default.VisionAPIHost);
 
@@ -535,18 +542,18 @@ namespace LiveCameraSample
             nextRound();
             button.Visibility = Visibility.Hidden;
 
-            FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
-            await faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
+            //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
+            await _faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
 
             if (currentParticipants.Length > 1)
             {
                 for (int i = 0; i < currentParticipants.Length; i++)
                 {
-                    CreatePersonResult person = await faceClient.CreatePersonAsync(currentGroupId, i.ToString());
+                    CreatePersonResult person = await _faceClient.CreatePersonAsync(currentGroupId, i.ToString());
                     MemoryStream s = new MemoryStream(streamBytes);
-                    var addedPersistedPerson = await faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, s, "userData", currentParticipants[i].FaceRectangle);
+                    var addedPersistedPerson = await _faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, s, "userData", currentParticipants[i].FaceRectangle);
                 }
-                await faceClient.TrainPersonGroupAsync(currentGroupId);
+                await _faceClient.TrainPersonGroupAsync(currentGroupId);
             }
             this.gameStarted = true;
             // Record start time, for auto-stop
