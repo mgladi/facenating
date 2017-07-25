@@ -192,6 +192,19 @@ namespace LiveCameraSample
             return DrawOverlay(baseImage, drawAction, true);
         }
 
+        public static BitmapSource DrawRound(BitmapSource baseImage, int roundNum)
+        {
+            Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
+            {
+                FormattedText ft = new FormattedText("Round " + roundNum,
+                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 42, Brushes.Black);
+                var geom = ft.BuildGeometry(new System.Windows.Point(20,20));
+                drawingContext.DrawGeometry(s_lineBrush, new Pen(Brushes.Black, 2 * annotationScale), geom);
+            };
+
+            return DrawOverlay(baseImage, drawAction);
+        }
+
         public static BitmapSource DrawFaces(BitmapSource baseImage, Microsoft.ProjectOxford.Face.Contract.Face[] faces, EmotionScores[] emotionScores, string[] celebName)
         {
             if (faces == null)

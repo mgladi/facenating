@@ -82,6 +82,8 @@ namespace LiveCameraSample
         private double amount; // amount
         private const int RoundTimeInSeconds = 30;
 
+        private bool newRound = true;
+
         private bool gameStarted = false;
         public enum AppMode
         {
@@ -131,9 +133,14 @@ namespace LiveCameraSample
                     // Display the image in the left pane.
                     LeftImage.Source = e.Frame.Image.ToBitmapSource();
 
+                    if(newRound)
+                    {
+                        RightImage.Source = VisualizeRound(roundNumber);
+                        newRound = false;
+                    }
                     // If we're fusing client-side face detection with remote analysis, show the
                     // new frame now with the most recent analysis available. 
-                    if (_fuseClientRemoteResults)
+                    else if (_fuseClientRemoteResults)
                     {
                         RightImage.Source = VisualizeResult(e.Frame);
                     }
@@ -386,6 +393,27 @@ namespace LiveCameraSample
             }
 
             return visImage;
+        }
+
+        private BitmapSource VisualizeRound(int roundNum)
+        {
+            // Define parameters used to create the BitmapSource.
+            PixelFormat pf = PixelFormats.Gray2;
+            int width = 200;
+            int height = 150;
+            int rawStride = (width * pf.BitsPerPixel + 7) / 8;
+            byte[] rawImage = new byte[rawStride * height];
+
+            // Initialize the image with data.
+            Random value = new Random();
+            value.NextBytes(rawImage);
+
+            // Create a BitmapSource.
+            BitmapSource bitmap = BitmapSource.Create(width, height,
+                96, 96, pf, null,
+                rawImage, rawStride);
+
+            return Visualization.DrawRound(bitmap, roundNum);
         }
 
         /// <summary> Populate CameraList in the UI, once it is loaded. </summary>
