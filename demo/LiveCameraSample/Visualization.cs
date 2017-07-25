@@ -193,7 +193,7 @@ namespace LiveCameraSample
             return DrawOverlay(baseImage, drawAction, true);
         }
 
-        public static BitmapSource DrawRound(BitmapSource baseImage, string title, string content)
+        public static BitmapSource DrawRound(BitmapSource baseImage, string title, string content, Dictionary<Guid, CroppedBitmap> playerImages = null)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
@@ -208,7 +208,6 @@ namespace LiveCameraSample
 
                 drawingContext.DrawText(titleText, titlePoint);
                 drawingContext.DrawText(contentText, contentPoint);
-
             };
 
             return DrawOverlay(baseImage, drawAction);
