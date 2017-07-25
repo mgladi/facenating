@@ -288,10 +288,11 @@ namespace LiveCameraSample
             Guid[] faceIds = faces.Select(face => face.FaceId).ToArray();
 
             IdentifyResult[] identities = await _faceClient.IdentifyAsync(currentGroupId, faceIds);
+            var identityDict = identities.Where(i => i.Candidates.Length > 0).ToDictionary(i => i.Candidates[0].PersonId, i => faces.First(f => f.FaceId == i.FaceId));
 
             return new LiveCameraResult
             {
-                Identites = identities,
+                Identities = identityDict,
                 Faces = faces,
                 EmotionScores = faces.Select(f => f.FaceAttributes.Emotion).ToArray()
             };
