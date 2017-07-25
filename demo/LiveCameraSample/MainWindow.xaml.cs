@@ -106,18 +106,11 @@ namespace LiveCameraSample
             // Create grabber. 
             _grabber = new FrameGrabber<LiveCameraResult>();
 
+            updateMode(AppMode.Participants);
 
             // Set up a listener for when the client receives a new frame.
             _grabber.NewFrameProvided += (s, e) =>
             {
-                if(round == null)
-                {
-                    roundNumber = 1;
-                    emotion = EmotionType.Surprise;
-                    amount = 0.7;
-                    round = new RoundEmotion(emotion, amount);
-                    Properties.Settings.Default.AutoStopTime = new TimeSpan(0,0,0, RoundTimeInSeconds); //TEMP
-                }
                 if (_mode == AppMode.EmotionsWithClientFaceDetect)
                 {
                     // Local face detection. 
@@ -151,11 +144,7 @@ namespace LiveCameraSample
                 {
                     if (roundNumber < NumOfRounds)
                     {
-                        roundNumber++;
-                        emotion = EmotionType.Surprise;
-                        amount = 0.7;
-                        round = new RoundEmotion(emotion, amount);
-                        Properties.Settings.Default.AutoStopTime = new TimeSpan(0,0,0,RoundTimeInSeconds);
+                        nextRound();
                         _startTime = DateTime.Now;
                     }
                     else
@@ -445,15 +434,9 @@ namespace LiveCameraSample
             comboBox.SelectedIndex = 0;
         }
 
-        private void ModeList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void updateMode(AppMode newMode)
         {
-            // Disable "most-recent" results display. 
-            _fuseClientRemoteResults = false;
-
-            var comboBox = sender as ComboBox;
-            var modes = (AppMode[])Enum.GetValues(typeof(AppMode));
-            _mode = modes[comboBox.SelectedIndex];
-
+            this._mode = newMode;
             switch (_mode)
             {
                 case AppMode.Participants:
@@ -622,7 +605,28 @@ namespace LiveCameraSample
                 await faceClient.TrainPersonGroupAsync(currentGroupId);
             }
             this.gameStarted = true;
-            ModeList.SelectedIndex = 1;
+            nextRound();
+        }
+
+        private void nextRound()
+        {
+            if (this.round == null)
+            {
+                roundNumber = 1;
+                emotion = EmotionType.Surprise;
+                amount = 0.7;
+                round = new RoundEmotion(emotion, amount);
+            }
+            else
+            {
+                roundNumber++;
+                emotion = EmotionType.Happiness;
+                amount = 0.6;
+                round = new RoundEmotion(emotion, amount);
+            }
+
+            updateMode(AppMode.Emotions);
+            Properties.Settings.Default.AutoStopTime = new TimeSpan(0, 0, 0, RoundTimeInSeconds);
         }
 
         public byte[] ReadFully(Stream input)
