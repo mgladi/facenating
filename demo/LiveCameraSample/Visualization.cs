@@ -192,12 +192,12 @@ namespace LiveCameraSample
             return DrawOverlay(baseImage, drawAction, true);
         }
 
-        public static BitmapSource DrawRound(BitmapSource baseImage, int roundNum)
+        public static BitmapSource DrawRound(BitmapSource baseImage, int roundNum, string state)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
-                FormattedText ft = new FormattedText("Round " + roundNum,
-                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 42, Brushes.Black);
+                FormattedText ft = new FormattedText(state + " Round " + roundNum,
+                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 25, Brushes.Black);
                 var geom = ft.BuildGeometry(new System.Windows.Point(20,20));
                 drawingContext.DrawGeometry(s_lineBrush, new Pen(Brushes.Black, 2 * annotationScale), geom);
             };
