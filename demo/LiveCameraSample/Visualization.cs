@@ -118,14 +118,23 @@ namespace LiveCameraSample
 
                         newFaceX = Math.Max(0, newFaceX);
                         newFaceY = Math.Max(0, newFaceY);
-
-                        if (newFaceX + newFaceWidth> baseImage.Width || newFaceY + newFaceHeight > baseImage.Height)
+                        if (newFaceX < 0)
                         {
-                            newFaceWidth = baseImage.Width - newFaceX - 1;
-                            newFaceHeight = baseImage.Height - newFaceY - 1;
+                            newFaceX = 0;
+                        }
+                        if (newFaceY < 0)
+                        {
+                            newFaceY = 0;
+                        }
+                        if (newFaceX + newFaceWidth > baseImage.Width)
+                        {
+                            newFaceX = baseImage.Width - newFaceWidth;
+                        }
+                        if (newFaceY + newFaceHeight > baseImage.Height)
+                        {
+                            newFaceY = baseImage.Height - newFaceHeight;
                         }
 
-                        
                         Int32Rect r = new Int32Rect((int)newFaceX, (int)newFaceY, (int)newFaceWidth, (int)newFaceHeight);
 
                         BitmapSource topHalf = new CroppedBitmap(baseImage, r);
