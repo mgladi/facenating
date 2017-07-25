@@ -51,6 +51,7 @@ using System.Windows.Navigation;
 using VideoFrameAnalyzer;
 using GameSystem;
 using System.Threading;
+using System.IO;
 
 namespace LiveCameraSample
 {
@@ -86,8 +87,12 @@ namespace LiveCameraSample
             Celebrities
         }
 
+        private string currentGroupName = Guid.NewGuid().ToString();
+        private string currentGroupId;
+
         public MainWindow()
         {
+            currentGroupId = currentGroupName;
             InitializeComponent();
 
             // Create grabber. 
@@ -211,6 +216,10 @@ namespace LiveCameraSample
             return new LiveCameraResult { Faces = faces };
         }
 
+        private VideoFrame lastFrame;
+        private System.Windows.Rect[] rects;
+        private Face[] currentParticipants;
+        private MemoryStream otherJpg;
 
         /// <summary> Function which submits a frame to the Face API. </summary>
         /// <param name="frame"> The video frame to submit. </param>
@@ -218,12 +227,22 @@ namespace LiveCameraSample
         ///     and containing the faces returned by the API. </returns>
         private async Task<LiveCameraResult> ParticipantsAnalysisFunction(VideoFrame frame)
         {
+            lastFrame = frame;
             // Encode image. 
             var jpg = frame.Image.ToMemoryStream(".jpg", s_jpegParams);
+            otherJpg = frame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
+            //otherJpg = new MemoryStream();
+            //await jpg.CopyToAsync(otherJpg);
             // Submit image to API. 
             var attrs = new List<FaceAttributeType> { FaceAttributeType.Age,
                 FaceAttributeType.Gender, FaceAttributeType.HeadPose };
             var faces = await _faceClient.DetectAsync(jpg, returnFaceAttributes: attrs);
+            currentParticipants = faces;
+
+            this.Dispatcher.BeginInvoke((Action)(() =>
+            {
+                button.IsEnabled = currentParticipants.Length > 1;
+            }));
             // Count the API call. 
             Properties.Settings.Default.FaceAPICallCount++;
             // Output. 
@@ -537,6 +556,25 @@ namespace LiveCameraSample
                 OpenCvSharp.Rect r = sortedClientRects[i];
                 sortedResultFaces[i].FaceRectangle = new FaceRectangle { Left = r.Left, Top = r.Top, Width = r.Width, Height = r.Height };
             }
+        }
+
+        private async void button_Click(object sender, RoutedEventArgs e)
+        {
+
+            FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
+            await faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
+
+            if (currentParticipants.Length > 1)
+            {
+                for (int i = 0; i < currentParticipants.Length; i++)
+                {
+                    CreatePersonResult person = await faceClient.CreatePersonAsync(currentGroupId, i.ToString());
+                    var addedPersistedPerson = await faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, this.otherJpg, "userData", currentParticipants[i].FaceRectangle);
+                }
+                await faceClient.TrainPersonGroupAsync(currentGroupId);
+            }
+            this.gameStarted = true;
+            ModeList.SelectedIndex = 1;
         }
     }
 }
