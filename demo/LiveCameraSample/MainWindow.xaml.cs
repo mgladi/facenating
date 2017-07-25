@@ -72,7 +72,7 @@ namespace LiveCameraSample
         private AppMode _mode;
         private DateTime _startTime;
         private const int NumOfRounds = 4;
-        private Round round = null;
+        private IRound round = null;
         private int roundNumber;
 
         public enum AppMode
@@ -98,8 +98,8 @@ namespace LiveCameraSample
                 if(round == null)
                 {
                     roundNumber = 1;
-                    round = new Round(roundNumber);
-                    Properties.Settings.Default.AutoStopTime = round.RoundTimeSpan;
+                    round = new RoundEmotion(EmotionType.Surprise, 0.7);
+                    Properties.Settings.Default.AutoStopTime = new TimeSpan(0,0,0,30); //TEMP
                 }
                 if (_mode == AppMode.EmotionsWithClientFaceDetect)
                 {
@@ -130,8 +130,8 @@ namespace LiveCameraSample
                     if (roundNumber < NumOfRounds)
                     {
                         roundNumber++;
-                        round = new Round(roundNumber);
-                        Properties.Settings.Default.AutoStopTime = round.RoundTimeSpan;
+                        round = new RoundEmotion(EmotionType.Surprise, 0.7);
+                        Properties.Settings.Default.AutoStopTime = new TimeSpan(30);
                         _startTime = DateTime.Now;
                     }
                     else

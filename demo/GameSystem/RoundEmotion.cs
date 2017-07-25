@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GameSystem;
 using Microsoft.ProjectOxford.Common.Contract;
 
 namespace LiveCameraSample
 {
-    enum EmotionType
+    public enum EmotionType
     {
         Anger,
         Contempt,
@@ -18,19 +19,16 @@ namespace LiveCameraSample
         Sadness,
         Surprise,
     }
-    class RoundEmotion: IRound
+    public class RoundEmotion: IRound
     {
-        public RoundEmotion(EmotionType emotionType)
+        public RoundEmotion(EmotionType emotionType, double targetScore)
         {
             this.targetEmotion = emotionType;
+            this.targetScore = targetScore;
         }
 
         private EmotionType targetEmotion;
-        public MainWindow.AppMode[] GetAppModes()
-        {
-            MainWindow.AppMode[] modes = {MainWindow.AppMode.Emotions};
-            return modes;
-        }
+        private double targetScore;
 
         public string GetRoundDescription()
         {
@@ -44,8 +42,13 @@ namespace LiveCameraSample
             KeyValuePair<string, float> currDominantEmotion;
             foreach (EmotionScores userEmotionScores in apiResult.EmotionScores)
             {
+                currScore = 0;
                 currDominantEmotion = getDominantEmotion(userEmotionScores);
-                currScore = currDominantEmotion.Key == this.targetEmotion.ToString() ? 10 : 0;
+                if (currDominantEmotion.Key == this.targetEmotion.ToString() &&
+                    Math.Abs(currDominantEmotion.Value - this.targetScore) <= 0.1)
+                {
+                   currScore = 10;
+                }
                 frameScores.Add(currScore);
             }
 

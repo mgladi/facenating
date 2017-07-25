@@ -70,10 +70,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EmotionRound.cs" />
-    <Compile Include="IRoundType.cs" />
+    <Compile Include="IRound.cs" />
     <Compile Include="LiveCameraResult.cs" />
-    <Compile Include="Round.cs" />
+    <Compile Include="RoundEmotion.cs" />
     <Compile Include="ScoringSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
