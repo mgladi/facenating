@@ -8,38 +8,50 @@ namespace GameSystem
 {
     public class ScoringSystem
     {
-        public int[] PlayersScore
+        public Dictionary<Guid, int> TotalScore
         {
             get;
             private set;
         }
 
-        public ScoringSystem(int numOfPlayers)
+        public Dictionary<Guid, int> CurrentRoundScore
         {
-            if(numOfPlayers < 1 || numOfPlayers > 4)
-            {
-                throw new Exception("Bad number of Players");
-            }
+            get;
+            private set;
+        }
 
-            PlayersScore = new int[numOfPlayers];
+        public ScoringSystem()
+        {
+            TotalScore= new Dictionary<Guid,int>();
+            CurrentRoundScore = new Dictionary<Guid, int>();
+        }
 
-            foreach(var player in PlayersScore)
+
+        public void AddToCurrentRound(Dictionary<Guid, int> playerRoundScore)
+        {
+            foreach (var item in playerRoundScore)
             {
-                PlayersScore[player] = 0;
+                if (!CurrentRoundScore.ContainsKey(item.Key))
+                {
+
+                    CurrentRoundScore[item.Key] = 0;
+                }
+                CurrentRoundScore[item.Key] += playerRoundScore[item.Key];
             }
         }
 
-        public void AddRoundScore(int[] playerRoundScore)
+        public void CreateNewRound()
         {
-            if(playerRoundScore == null || playerRoundScore.Length != PlayersScore.Length)
+            foreach (var item in CurrentRoundScore)
             {
-                throw new Exception("Bad score input");
-            }
+                if (!TotalScore.ContainsKey(item.Key))
+                {
 
-            foreach(var player in playerRoundScore)
-            {
-                PlayersScore[player] += playerRoundScore[player];
+                    TotalScore[item.Key] = 0;
+                }
+                TotalScore[item.Key] += CurrentRoundScore[item.Key];
             }
+            CurrentRoundScore = new Dictionary<Guid, int>();
         }
     }
 }

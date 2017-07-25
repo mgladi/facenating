@@ -45,6 +45,7 @@ using Microsoft.ProjectOxford.Emotion.Contract;
 using Microsoft.ProjectOxford.Face.Contract;
 using Microsoft.ProjectOxford.Vision.Contract;
 using Point = System.Windows.Point;
+using GameSystem;
 
 namespace LiveCameraSample
 {
@@ -213,39 +214,39 @@ namespace LiveCameraSample
             return DrawOverlay(baseImage, drawAction);
         }
 
-        public static BitmapSource DrawFaces(BitmapSource baseImage, Microsoft.ProjectOxford.Face.Contract.Face[] faces, EmotionScores[] emotionScores, string[] celebName)
+        public static BitmapSource DrawFaces(BitmapSource baseImage, Dictionary<Guid, Microsoft.ProjectOxford.Face.Contract.Face> identities, ScoringSystem scoring)
         {
-            if (faces == null)
+            if (identities == null)
             {
                 return baseImage;
             }
 
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
-                for (int i = 0; i < faces.Length; i++)
+                foreach (var personId in identities.Keys)
                 {
-                    var face = faces[i];
+                    var face = identities[personId];
+
                     if (face.FaceRectangle == null) { continue; }
 
                     Rect faceRect = new Rect(
                         face.FaceRectangle.Left, face.FaceRectangle.Top,
                         face.FaceRectangle.Width, face.FaceRectangle.Height);
                     string text = "";
-                    text += face.FaceId;
                    
                     if (face.FaceAttributes != null)
                     {
                         text += Aggregation.SummarizeFaceAttributes(face.FaceAttributes);
                     }
 
-                    if (emotionScores?[i] != null)
+                    if (face.FaceAttributes.Emotion != null)
                     {
-                        text += Aggregation.SummarizeEmotion(emotionScores[i]);
+                        text += Aggregation.SummarizeEmotion(face.FaceAttributes.Emotion);
                     }
 
-                    if (celebName?[i] != null)
+                    if (scoring.CurrentRoundScore.ContainsKey(personId))
                     {
-                        text += celebName[i];
+                        text += string.Format("  +{0}pts", scoring.CurrentRoundScore[personId]);
                     }
 
                     faceRect.Inflate(6 * annotationScale, 6 * annotationScale);
