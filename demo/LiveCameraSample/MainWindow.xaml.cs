@@ -87,10 +87,6 @@ namespace LiveCameraSample
         private const int NumOfRounds = 4;
         private IRound round = null;
         private int roundNumber = 0;
-        private EmotionType emotion; // temp
-        private double amount; // amount
-        private const int RoundTimeInSeconds = 30;
-
 
         public enum AppMode
         {
@@ -161,6 +157,7 @@ namespace LiveCameraSample
                         currentTimerTask = TimeSpan.FromSeconds(6);
                         currentTimeTaskStart = DateTime.Now;
                         gameState = GameState.RoundEnd;
+                        scoringSystem.CreateNewRound();
                         }
 
                     else if (gameState == GameState.RoundEnd)
@@ -373,8 +370,7 @@ namespace LiveCameraSample
                     // Compute round score
                     Dictionary<Guid, int> scores = round.ComputeFrameScorePerPlayer(result);
                     scoringSystem.AddToCurrentRound(scores);
-                    visImage = Visualization.DrawSomething(visImage, emotion + ":" + amount, new Point(0, 0));
-                    visImage = Visualization.DrawScores(visImage, scores);
+                    visImage = Visualization.DrawSomething(visImage, round.GetRoundTarget(), new Point(0, 0));
 
                     visImage = Visualization.DrawFaces(visImage, result.Identities, scoringSystem);
                     visImage = Visualization.DrawTags(visImage, result.Tags);
@@ -408,9 +404,15 @@ namespace LiveCameraSample
             return Visualization.DrawRound(bitmap, "Start round " + roundNumber, description);
 
         }
+
         private BitmapSource VisualizeEndRound()
         {
             var bitmap = VisualizeRound();
+            string s = "";
+            foreach (var item in scoringSystem.TotalScore)
+            {
+                s += item.Key + ": " + item.Value + "\n";
+            }
             return Visualization.DrawRound(bitmap, "End round " + roundNumber, "Get Ready...", playerImages);
 
         }
@@ -617,18 +619,13 @@ namespace LiveCameraSample
             if (this.round == null)
             {
                 roundNumber = 1;
-                emotion = EmotionType.Surprise;
-                amount = 0.7;
-                round = new RoundEmotion(emotion, amount);
             }
             else
             {
                 roundNumber++;
-                emotion = EmotionType.Happiness;
-                amount = 0.6;
-                round = new RoundEmotion(emotion, amount);
             }
 
+            round = new RoundEmotion();
             updateMode(AppMode.Emotions);
             scoringSystem.CreateNewRound();
             playerImages = new Dictionary<Guid, CroppedBitmap>();

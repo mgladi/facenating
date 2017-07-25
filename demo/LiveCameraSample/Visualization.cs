@@ -235,7 +235,7 @@ namespace LiveCameraSample
                    
                     if (face.FaceAttributes != null)
                     {
-                        text += Aggregation.SummarizeFaceAttributes(face.FaceAttributes);
+                        // text += Aggregation.SummarizeFaceAttributes(face.FaceAttributes);
                     }
 
                     if (face.FaceAttributes.Emotion != null)
