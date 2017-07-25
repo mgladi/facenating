@@ -107,7 +107,6 @@
     </ApplicationDefinition>
     <Compile Include="Aggregation.cs" />
     <Compile Include="CelebritiesResult.cs" />
-    <Compile Include="LiveCameraResult1.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Visualization.cs" />
     <Page Include="MainWindow.xaml">

@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GameSystem;
 
 namespace LiveCameraSample
 {
-    interface IRound
+    public interface IRound
     {
-        MainWindow.AppMode[] GetAppModes();
         string GetRoundDescription();
-        List<int> ComputeFrameScorePerPlayer(LiveCameraResult result);
+        Dictionary<Guid, int> ComputeFrameScorePerPlayer(LiveCameraResult result);
     }
 }
