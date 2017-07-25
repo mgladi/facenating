@@ -69,9 +69,10 @@ namespace LiveCameraSample
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
         private DateTime _startTime;
-
+        private bool gameStarted = false;
         public enum AppMode
         {
+            Participants,
             Faces,
             Emotions,
             EmotionsWithClientFaceDetect,
@@ -174,6 +175,25 @@ namespace LiveCameraSample
         /// <returns> A <see cref="Task{LiveCameraResult}"/> representing the asynchronous API call,
         ///     and containing the faces returned by the API. </returns>
         private async Task<LiveCameraResult> FacesAnalysisFunction(VideoFrame frame)
+        {
+            // Encode image. 
+            var jpg = frame.Image.ToMemoryStream(".jpg", s_jpegParams);
+            // Submit image to API. 
+            var attrs = new List<FaceAttributeType> { FaceAttributeType.Age,
+                FaceAttributeType.Gender, FaceAttributeType.HeadPose };
+            var faces = await _faceClient.DetectAsync(jpg, returnFaceAttributes: attrs);
+            // Count the API call. 
+            Properties.Settings.Default.FaceAPICallCount++;
+            // Output. 
+            return new LiveCameraResult { Faces = faces };
+        }
+
+
+        /// <summary> Function which submits a frame to the Face API. </summary>
+        /// <param name="frame"> The video frame to submit. </param>
+        /// <returns> A <see cref="Task{LiveCameraResult}"/> representing the asynchronous API call,
+        ///     and containing the faces returned by the API. </returns>
+        private async Task<LiveCameraResult> ParticipantsAnalysisFunction(VideoFrame frame)
         {
             // Encode image. 
             var jpg = frame.Image.ToMemoryStream(".jpg", s_jpegParams);
@@ -296,8 +316,15 @@ namespace LiveCameraSample
                     MatchAndReplaceFaceRectangles(result.Faces, clientFaces);
                 }
 
-                visImage = Visualization.DrawFaces(visImage, result.Faces, result.EmotionScores, result.CelebrityNames);
-                visImage = Visualization.DrawTags(visImage, result.Tags);
+                if (this.gameStarted)
+                {
+                    visImage = Visualization.DrawFaces(visImage, result.Faces, result.EmotionScores, result.CelebrityNames);
+                    visImage = Visualization.DrawTags(visImage, result.Tags);
+                }
+                else
+                {
+                    visImage = Visualization.DrawParticipants(visImage, result.Faces);
+                }
             }
 
             return visImage;
@@ -342,6 +369,9 @@ namespace LiveCameraSample
             _mode = modes[comboBox.SelectedIndex];
             switch (_mode)
             {
+                case AppMode.Participants:
+                    _grabber.AnalysisFunction = ParticipantsAnalysisFunction;
+                    break;
                 case AppMode.Faces:
                     _grabber.AnalysisFunction = FacesAnalysisFunction;
                     break;
