@@ -138,6 +138,10 @@ namespace LiveCameraSample.Properties {
             get {
                 return ((global::System.TimeSpan)(this["AutoStopTime"]));
             }
+            set
+            {
+                this["AutoStopTime"] = value;
+            }
         }
 
         [global::System.Configuration.UserScopedSettingAttribute()]

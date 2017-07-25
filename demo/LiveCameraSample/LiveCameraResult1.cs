@@ -34,7 +34,7 @@
 namespace LiveCameraSample
 {
     // Class to hold all possible result types. 
-    public class LiveCameraResult
+    public class LiveCameraResult1
     {
         public Microsoft.ProjectOxford.Face.Contract.Face[] Faces { get; set; } = null;
         public Microsoft.ProjectOxford.Common.Contract.EmotionScores[] EmotionScores { get; set; } = null;

@@ -49,6 +49,8 @@ using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using VideoFrameAnalyzer;
+using GameSystem;
+using System.Threading;
 
 namespace LiveCameraSample
 {
@@ -69,6 +71,9 @@ namespace LiveCameraSample
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
         private DateTime _startTime;
+        private const int NumOfRounds = 4;
+        private Round round = null;
+        private int roundNumber;
 
         public enum AppMode
         {
@@ -86,9 +91,16 @@ namespace LiveCameraSample
             // Create grabber. 
             _grabber = new FrameGrabber<LiveCameraResult>();
 
+
             // Set up a listener for when the client receives a new frame.
             _grabber.NewFrameProvided += (s, e) =>
             {
+                if(round == null)
+                {
+                    roundNumber = 1;
+                    round = new Round(roundNumber);
+                    Properties.Settings.Default.AutoStopTime = round.RoundTimeSpan;
+                }
                 if (_mode == AppMode.EmotionsWithClientFaceDetect)
                 {
                     // Local face detection. 
@@ -115,7 +127,17 @@ namespace LiveCameraSample
                 // See if auto-stop should be triggered. 
                 if (Properties.Settings.Default.AutoStopEnabled && (DateTime.Now - _startTime) > Properties.Settings.Default.AutoStopTime)
                 {
-                    _grabber.StopProcessingAsync();
+                    if (roundNumber < NumOfRounds)
+                    {
+                        roundNumber++;
+                        round = new Round(roundNumber);
+                        Properties.Settings.Default.AutoStopTime = round.RoundTimeSpan;
+                        _startTime = DateTime.Now;
+                    }
+                    else
+                    {
+                        _grabber.StopProcessingAsync();
+                    }
                 }
             };
 
