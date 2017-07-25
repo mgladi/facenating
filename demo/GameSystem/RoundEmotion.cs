@@ -19,6 +19,7 @@ namespace LiveCameraSample
         Sadness,
         Surprise,
     }
+
     public class RoundEmotion: IRound
     {
         public RoundEmotion(EmotionType emotionType, double targetScore)
@@ -35,7 +36,7 @@ namespace LiveCameraSample
             return $"Try to get the highest '{this.targetEmotion}' score you can!";
         }
 
-        public List<int> ComputeFrameScorePerPlayer(LiveCameraResult apiResult)
+        public Dictionary<Guid, int> ComputeFrameScorePerPlayer(LiveCameraResult apiResult)
         {
             List<int> frameScores = new List<int>();
             int currScore;
@@ -52,7 +53,7 @@ namespace LiveCameraSample
                 frameScores.Add(currScore);
             }
 
-            return frameScores;
+            return new Dictionary<Guid, int>(); //TODO
         }
 
         private KeyValuePair<string, float> getDominantEmotion(EmotionScores scores)
