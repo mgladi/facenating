@@ -24,7 +24,7 @@ namespace GameSystem
     //public enum RoundType { Age, Emotion, Catch}
     public class Round
     {
-        public TimeSpan RoundTimeSpan = new TimeSpan(0, 0, 30);
+        public TimeSpan RoundTimeSpan = new TimeSpan(0, 0, 10);
         private IRoundType roundType;
 
         public Round(int roundNum)
