@@ -240,7 +240,7 @@ namespace LiveCameraSample
             lastFrame = frame;
             // Encode image. 
             var jpg = frame.Image.ToMemoryStream(".jpg", s_jpegParams);
-            otherJpg = frame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
+            lastFrame = frame;
             //otherJpg = new MemoryStream();
             //await jpg.CopyToAsync(otherJpg);
             // Submit image to API. 
@@ -577,6 +577,8 @@ namespace LiveCameraSample
 
         private async void button_Click(object sender, RoutedEventArgs e)
         {
+            var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
+            byte[] streamBytes = ReadFully(otherJpg);
 
             FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
             await faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
@@ -586,12 +588,27 @@ namespace LiveCameraSample
                 for (int i = 0; i < currentParticipants.Length; i++)
                 {
                     CreatePersonResult person = await faceClient.CreatePersonAsync(currentGroupId, i.ToString());
-                    var addedPersistedPerson = await faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, this.otherJpg, "userData", currentParticipants[i].FaceRectangle);
+                    MemoryStream s = new MemoryStream(streamBytes);
+                    var addedPersistedPerson = await faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, s, "userData", currentParticipants[i].FaceRectangle);
                 }
                 await faceClient.TrainPersonGroupAsync(currentGroupId);
             }
             this.gameStarted = true;
             ModeList.SelectedIndex = 1;
+        }
+
+        public byte[] ReadFully(Stream input)
+        {
+            byte[] buffer = new byte[16 * 1024];
+            using (MemoryStream ms = new MemoryStream())
+            {
+                int read;
+                while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    ms.Write(buffer, 0, read);
+                }
+                return ms.ToArray();
+            }
         }
     }
 }

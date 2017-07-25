@@ -189,7 +189,7 @@ namespace LiveCameraSample
                 }
             };
 
-            return DrawOverlay(baseImage, drawAction);
+            return DrawOverlay(baseImage, drawAction, true);
         }
 
         public static BitmapSource DrawFaces(BitmapSource baseImage, Microsoft.ProjectOxford.Face.Contract.Face[] faces, EmotionScores[] emotionScores, string[] celebName)
@@ -284,7 +284,7 @@ namespace LiveCameraSample
                 drawingContext.DrawText(ft, location);
             };
 
-            return DrawOverlay(baseImage, drawAction);
+            return DrawOverlay(baseImage, drawAction, true);
         }
 
     }

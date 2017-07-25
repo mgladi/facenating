@@ -46,16 +46,19 @@ namespace LiveCameraSample
             List<int> frameScores = new List<int>();
             int currScore;
             KeyValuePair<string, float> currDominantEmotion;
-            foreach (EmotionScores userEmotionScores in apiResult.EmotionScores)
+            if (apiResult.EmotionScores!= null)
             {
-                currScore = 0;
-                currDominantEmotion = getDominantEmotion(userEmotionScores);
-                if (currDominantEmotion.Key == this.targetEmotion.ToString() &&
-                    Math.Abs(currDominantEmotion.Value - this.targetScore) <= Delta)
+                foreach (EmotionScores userEmotionScores in apiResult.EmotionScores)
                 {
-                   currScore = 10;
+                    currScore = 0;
+                    currDominantEmotion = getDominantEmotion(userEmotionScores);
+                    if (currDominantEmotion.Key == this.targetEmotion.ToString() &&
+                        Math.Abs(currDominantEmotion.Value - this.targetScore) <= Delta)
+                    {
+                        currScore = 10;
+                    }
+                    frameScores.Add(currScore);
                 }
-                frameScores.Add(currScore);
             }
 
             return new Dictionary<Guid, int>(); //TODO
