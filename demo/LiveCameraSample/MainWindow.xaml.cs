@@ -352,7 +352,7 @@ namespace LiveCameraSample
                 if (this.gameStarted)
                 {
                     // Compute round score
-                    List<int> scores = round.ComputeFrameScorePerPlayer(result);
+                    Dictionary<Guid, int> scores = round.ComputeFrameScorePerPlayer(result);
 
                     visImage = Visualization.DrawSomething(visImage, emotion + ":" + amount, new Point(0, 0));
                     visImage = Visualization.DrawScores(visImage, scores);

@@ -164,7 +164,7 @@ namespace LiveCameraSample
             return DrawOverlay(baseImage, drawAction, true);
         }
 
-        public static BitmapSource DrawScores(BitmapSource baseImage, List<int> scores)
+        public static BitmapSource DrawScores(BitmapSource baseImage, Dictionary<Guid, int> scores)
         {
             if (scores == null)
             {
@@ -174,7 +174,7 @@ namespace LiveCameraSample
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
                 double y = 0;
-                foreach (var score in scores)
+                foreach (var score in scores.Values) //TODO
                 {
                     // Create formatted text--in a particular font at a particular size
                     FormattedText ft = new FormattedText(score + "pts",
