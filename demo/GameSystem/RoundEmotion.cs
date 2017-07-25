@@ -40,6 +40,10 @@ namespace LiveCameraSample
         {
             return $"Try to get {this.targetScore} \n'{this.targetEmotion}' score!";
         }
+        public string GetRoundTarget()
+        {
+            return $"{this.targetEmotion}: {this.targetScore}";
+        }
 
         public Dictionary<Guid, int> ComputeFrameScorePerPlayer(LiveCameraResult apiResult)
         {
