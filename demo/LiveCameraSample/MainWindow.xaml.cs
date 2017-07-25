@@ -58,6 +58,15 @@ using System.IO;
 
 namespace LiveCameraSample
 {
+
+    public enum GameState
+    {
+        Participants,
+        RoundBegin,
+        Game,
+        RoundEnd
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -82,9 +91,7 @@ namespace LiveCameraSample
         private double amount; // amount
         private const int RoundTimeInSeconds = 30;
 
-        private bool newRound = false;
 
-        private bool gameStarted = false;
         public enum AppMode
         {
             Participants,
@@ -97,6 +104,9 @@ namespace LiveCameraSample
 
         private string currentGroupName = Guid.NewGuid().ToString();
         private string currentGroupId;
+        private TimeSpan currentTimerTask = TimeSpan.FromSeconds(6);
+        private DateTime currentTimeTaskStart;
+        private GameState gameState = GameState.Participants;
 
         public MainWindow()
         {
@@ -126,33 +136,40 @@ namespace LiveCameraSample
                     // Display the image in the left pane.
                     LeftImage.Source = e.Frame.Image.ToBitmapSource();
 
-                    if(newRound)
-                    {
-                        RightImage.Source = VisualizeRound(roundNumber);
-                        newRound = false;
-                    }
+                    
                     // If we're fusing client-side face detection with remote analysis, show the
                     // new frame now with the most recent analysis available. 
-                    else if (_fuseClientRemoteResults)
+                    if (_fuseClientRemoteResults)
                     {
                         RightImage.Source = VisualizeResult(e.Frame);
                     }
                 }));
 
-                // See if auto-stop should be triggered. 
-                if (gameStarted == true &&  Properties.Settings.Default.AutoStopEnabled && (DateTime.Now - _startTime) > Properties.Settings.Default.AutoStopTime)
+                if (DateTime.Now - currentTimeTaskStart > currentTimerTask)
                 {
-                    if (roundNumber < NumOfRounds)
+                    if (gameState == GameState.RoundBegin)
                     {
-                        if (roundNumber != 0)
+                        currentTimerTask = TimeSpan.FromSeconds(30);
+                        currentTimeTaskStart = DateTime.Now;
+                        gameState = GameState.Game;
+                    }
+                    else if (gameState == GameState.Game)
+                    {
+                        currentTimerTask = TimeSpan.FromSeconds(6);
+                        currentTimeTaskStart = DateTime.Now;
+                        gameState = GameState.RoundEnd;
+                    }
+
+                    else if (gameState == GameState.RoundEnd)
+                    {
+                        if (roundNumber == NumOfRounds)
+                        {
+                            _grabber.StopProcessingAsync();
+                        }
+                        else
                         {
                             nextRound();
-                            _startTime = DateTime.Now;
                         }
-                    }
-                    else
-                    {
-                        _grabber.StopProcessingAsync();
                     }
                 }
             };
@@ -368,7 +385,15 @@ namespace LiveCameraSample
                     MatchAndReplaceFaceRectangles(result.Faces, clientFaces);
                 }
 
-                if (this.gameStarted)
+                if (this.gameState == GameState.RoundBegin)
+                {
+                    visImage = VisualizeStartRound(roundNumber);
+                }
+                else if (this.gameState == GameState.RoundEnd)
+                {
+                    visImage = VisualizeEndRound(roundNumber);
+                }
+                else if (this.gameState == GameState.Game)
                 {
                     // Compute round score
                     Dictionary<Guid, int> scores = round.ComputeFrameScorePerPlayer(result);
@@ -379,7 +404,7 @@ namespace LiveCameraSample
                     visImage = Visualization.DrawFaces(visImage, result.Faces, result.EmotionScores, result.CelebrityNames);
                     visImage = Visualization.DrawTags(visImage, result.Tags);
                 }
-                else
+                else if (this.gameState == GameState.Participants)
                 {
                     visImage = Visualization.DrawParticipants(visImage, result.Faces);
                 }
@@ -388,6 +413,19 @@ namespace LiveCameraSample
             return visImage;
         }
 
+
+        private BitmapSource VisualizeStartRound(int roundNum)
+        {
+            var bitmap = VisualizeRound(roundNum);
+            return Visualization.DrawRound(bitmap, roundNum, "Start");
+
+        }
+        private BitmapSource VisualizeEndRound(int roundNum)
+        {
+            var bitmap = VisualizeRound(roundNum);
+            return Visualization.DrawRound(bitmap, roundNum, "End");
+
+        }
         private BitmapSource VisualizeRound(int roundNum)
         {
             // Define parameters used to create the BitmapSource.
@@ -405,8 +443,7 @@ namespace LiveCameraSample
             BitmapSource bitmap = BitmapSource.Create(width, height,
                 96, 96, pf, null,
                 rawImage, rawStride);
-
-            return Visualization.DrawRound(bitmap, roundNum);
+            return bitmap;
         }
 
         /// <summary> Populate ModeList in the UI, once it is loaded. </summary>
@@ -562,11 +599,13 @@ namespace LiveCameraSample
 
         private async void button_Click(object sender, RoutedEventArgs e)
         {
+
+            button.Visibility = Visibility.Hidden;
+
             var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
             byte[] streamBytes = ReadFully(otherJpg);
 
             nextRound();
-            button.Visibility = Visibility.Hidden;
 
             FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
             await faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
@@ -581,9 +620,6 @@ namespace LiveCameraSample
                 }
                 await faceClient.TrainPersonGroupAsync(currentGroupId);
             }
-            this.gameStarted = true;
-            // Record start time, for auto-stop
-            _startTime = DateTime.Now;
         }
 
         private void nextRound()
@@ -604,8 +640,9 @@ namespace LiveCameraSample
             }
 
             updateMode(AppMode.Emotions);
-            Properties.Settings.Default.AutoStopTime = new TimeSpan(0, 0, 0, RoundTimeInSeconds);
-            newRound = true;
+            this.gameState = GameState.RoundBegin;
+            this.currentTimerTask = TimeSpan.FromSeconds(6);
+            this.currentTimeTaskStart = DateTime.Now;
         }
 
         public byte[] ReadFully(Stream input)
