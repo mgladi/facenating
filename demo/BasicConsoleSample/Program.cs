@@ -35,21 +35,18 @@ using System;
 using VideoFrameAnalyzer;
 using Microsoft.ProjectOxford.Face;
 using Microsoft.ProjectOxford.Face.Contract;
-using System.IO;
-using System.Linq;
 
 namespace BasicConsoleSample
 {
     internal class Program
     {
-
-        private static void Regular()
+        private static void Main(string[] args)
         {
             // Create grabber. 
             FrameGrabber<Face[]> grabber = new FrameGrabber<Face[]>();
 
             // Create Face API Client.
-            FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
+            FaceServiceClient faceClient = new FaceServiceClient("<subscription key>");
 
             // Set up a listener for when we acquire a new frame.
             grabber.NewFrameProvided += (s, e) =>
@@ -89,63 +86,6 @@ namespace BasicConsoleSample
 
             // Stop, blocking until done.
             grabber.StopProcessingAsync().Wait();
-
-        }
-        private static void Main(string[] args)
-        {
-            FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
-            FindInGroup();
-            //AddFaces();
-        }
-
-        private static void FindInGroup()
-        {
-            // Create Face API Client.
-            FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
-
-            string testImageFile = @"C:\Users\zivci\Documents\Students\both.png";
-            string personGroupId = "zivandrazgroupid";
-            using (Stream s = File.OpenRead(testImageFile))
-            {
-                var faces = faceClient.DetectAsync(s).Result;
-                var faceIds = faces.Select(face => face.FaceId).ToArray();
-
-
-                var results = faceClient.IdentifyAsync(personGroupId, faceIds).Result;
-                foreach (var identifyResult in results)
-                {
-                    Console.WriteLine("Result of face: {0}", identifyResult.FaceId);
-                    if (identifyResult.Candidates.Length == 0)
-                    {
-                        Console.WriteLine("No one identified");
-                    }
-                    else
-                    {
-                        // Get top 1 among all candidates returned
-                        var candidateId = identifyResult.Candidates[0].PersonId;
-                        var person = faceClient.GetPersonAsync(personGroupId, candidateId).Result;
-                        Console.WriteLine("Identified as {0}", person.Name);
-                    }
-                }
-            }
-        }
-        private static void AddFaces()
-        {
-            // Create Face API Client.
-            FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
-            faceClient.CreatePersonGroupAsync("zivandrazgroupid", "zivandrazgroup").Wait();
-            using (Stream s = File.OpenRead(@"C:\Users\zivci\Documents\Students\zivcizer.png"))
-            {
-                var zivPerson = faceClient.CreatePersonAsync("zivandrazgroupid", "zivPerson").Result;
-                var persistedZiv = faceClient.AddPersonFaceAsync("zivandrazgroupid", zivPerson.PersonId, s).Result;
-            }
-            using (Stream s = File.OpenRead(@"C:\Users\zivci\Documents\Students\raz.png"))
-            {
-                var razPerson = faceClient.CreatePersonAsync("zivandrazgroupid", "razPerson").Result;
-                var persistedRaz = faceClient.AddPersonFaceAsync("zivandrazgroupid", razPerson.PersonId, s).Result;
-            }
-            faceClient.TrainPersonGroupAsync("zivandrazgroupid").Wait();
-
         }
     }
 }
