@@ -104,6 +104,8 @@ namespace LiveCameraSample
         private DateTime currentTimeTaskStart;
         private GameState gameState = GameState.Participants;
         private ScoringSystem scoringSystem = new ScoringSystem();
+        private Dictionary<Guid, CroppedBitmap> playerImages = new Dictionary<Guid, CroppedBitmap>();
+
         public MainWindow()
         {
             currentGroupId = currentGroupName;
@@ -151,12 +153,12 @@ namespace LiveCameraSample
 
                     }
                     else if (gameState == GameState.Game)
-                    {
+                        {
                         currentTimerTask = TimeSpan.FromSeconds(6);
                         currentTimeTaskStart = DateTime.Now;
                         gameState = GameState.RoundEnd;
                         scoringSystem.CreateNewRound();
-                    }
+                        }
 
                     else if (gameState == GameState.RoundEnd)
                     {
@@ -341,7 +343,7 @@ namespace LiveCameraSample
             // Draw any results on top of the image. 
             BitmapSource visImage = frame.Image.ToBitmapSource();
 
-            var result = _latestResultsToDisplay;
+            LiveCameraResult result = _latestResultsToDisplay;
 
             if (result != null)
             {
@@ -372,6 +374,8 @@ namespace LiveCameraSample
 
                     visImage = Visualization.DrawFaces(visImage, result.Identities, scoringSystem);
                     visImage = Visualization.DrawTags(visImage, result.Tags);
+
+                    SavePlayerImages(visImage, result);
                 }
                 else if (this.gameState == GameState.Participants)
                 {
@@ -382,6 +386,16 @@ namespace LiveCameraSample
             return visImage;
         }
 
+        private void SavePlayerImages(BitmapSource image, LiveCameraResult result)
+        {
+            foreach (var player in result.Identities)
+            {
+                Int32Rect faceRectangle = new Int32Rect(player.Value.FaceRectangle.Left, player.Value.FaceRectangle.Top, player.Value.FaceRectangle.Width, player.Value.FaceRectangle.Height);
+                CroppedBitmap playerImage = new CroppedBitmap(image, faceRectangle);
+
+                playerImages[player.Key] = playerImage;
+            }            
+        }
 
         private BitmapSource VisualizeStartRound()
         {
@@ -400,7 +414,7 @@ namespace LiveCameraSample
             {
                 s += i++ + ": " + item.Value + "\n";
             }
-            return Visualization.DrawRound(bitmap, "End round " + roundNumber, s);
+            return Visualization.DrawRound(bitmap, "End round " + roundNumber, "Get Ready...", playerImages);
 
         }
         private BitmapSource VisualizeRound()
@@ -614,6 +628,8 @@ namespace LiveCameraSample
 
             round = new RoundEmotion();
             updateMode(AppMode.Emotions);
+            scoringSystem.CreateNewRound();
+            playerImages = new Dictionary<Guid, CroppedBitmap>();
             this.gameState = GameState.RoundBegin;
             this.currentTimerTask = TimeSpan.FromSeconds(6);
             this.currentTimeTaskStart = DateTime.Now;
