@@ -86,7 +86,7 @@ namespace LiveCameraSample
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
         private DateTime _startTime;
-        private const int NumOfRounds = 4;
+        private const int NumOfRounds =4;
         private IRound round = null;
         private int roundNumber = 0;
 
@@ -108,7 +108,7 @@ namespace LiveCameraSample
 
         private DispatcherTimer timer;
         private DateTime roundStart;
-        private string timerText = "";
+        private string timerText = "00:00";
 
         public MainWindow()
         {
@@ -147,7 +147,10 @@ namespace LiveCameraSample
                     {
                         RightImage.Source = VisualizeResult(e.Frame);
                     }
-                    RightImage.Source = VisualizeTimer();
+                    //if (gameState == GameState.Game)
+                   // {
+                      //  RightImage.Source = VisualizeTimer();
+                    //}
                 }));
 
                 if (DateTime.Now - currentTimeTaskStart > currentTimerTask)
@@ -157,7 +160,7 @@ namespace LiveCameraSample
                         currentTimerTask = TimeSpan.FromSeconds(15);
                         currentTimeTaskStart = DateTime.Now;
                         gameState = GameState.Game;
-
+                        roundStart = DateTime.Now;
                     }
                     else if (gameState == GameState.Game)
                     {
@@ -339,11 +342,11 @@ namespace LiveCameraSample
 
                 if (this.gameState == GameState.RoundBegin)
                 {
-                    visImage = VisualizeStartRound();
+                    visImage = VisualizeStartRound(frame);
                 }
                 else if (this.gameState == GameState.RoundEnd)
                 {
-                    visImage = VisualizeEndRound();
+                    visImage = VisualizeEndRound(frame);
                 }
                 else if (this.gameState == GameState.Game)
                 {
@@ -363,7 +366,7 @@ namespace LiveCameraSample
                 }
                 else if (this.gameState == GameState.GameEnd)
                 {
-                    visImage = VisualizeEndGame();
+                    visImage = VisualizeEndGame(frame);
                 }
             }
 
@@ -375,7 +378,7 @@ namespace LiveCameraSample
         {
             // Draw any results on top of the image. 
 
-            return Visualization.DrawTime();
+            return Visualization.DrawTime(timerText);
 
         }
 
@@ -395,56 +398,43 @@ namespace LiveCameraSample
             }            
         }
 
-        private BitmapSource VisualizeStartRound()
+        private BitmapSource VisualizeStartRound(VideoFrame frame)
         {
-            var bitmap = VisualizeRound();
+
+            var bitmap = VisualizeRound(frame);
             var description = round.GetRoundDescription();
-            return Visualization.DrawRound(bitmap, "Start round " + roundNumber, description);
-
+            
+            return Visualization.DrawRoundStart(bitmap, round);
         }
 
-        private BitmapSource VisualizeEndRound()
+        private BitmapSource VisualizeEndRound(VideoFrame frame)
         {
-            var bitmap = VisualizeRound();
+            var bitmap = VisualizeRound(frame);
+            string s = "Round Score:\n";
+
+            return Visualization.DrawRoundEnd(bitmap, "End round " + roundNumber, s, scoringSystem.TotalScore, playerImages);
+
+        }
+        private BitmapSource VisualizeEndGame(VideoFrame frame)
+        {
+            var bitmap = VisualizeRound(frame);
             string s = "";
             int i = 1;
-            foreach (var item in scoringSystem.TotalScore)
-            {
-                s += i++ + ": " + item.Value + "\n";
-            }
-            return Visualization.DrawRound(bitmap, "End round " + roundNumber, "Get Ready...", playerImages);
+            Dictionary<Guid,int> winners = scoringSystem.GameWinner();
+            return Visualization.DrawRoundEnd(bitmap, "End Game", "And the winner is:", winners, playerImages);
 
         }
-        private BitmapSource VisualizeEndGame()
+        private BitmapSource VisualizeRound(VideoFrame frame)
         {
-            var bitmap = VisualizeRound();
-            string s = "";
-            int i = 1;
-            foreach (var item in scoringSystem.TotalScore)
-            {
-                s += i++ + ": " + item.Value + "\n";
-            }
-            return Visualization.DrawRound(bitmap, "End Game", "And the winner is....", playerImages);
+            PixelFormat pf = PixelFormats.Rgba64;
 
-        }
-        private BitmapSource VisualizeRound()
-        {
             // Define parameters used to create the BitmapSource.
-            PixelFormat pf = PixelFormats.Gray2;
-            int width = 200;
-            int height = 150;
+            int width = frame.Image.Width;
+            int height = frame.Image.Height;
             int rawStride = (width * pf.BitsPerPixel + 7) / 8;
             byte[] rawImage = new byte[rawStride * height];
 
-            // Initialize the image with data.
-            Random value = new Random();
-            value.NextBytes(rawImage);
-
-            // Create a BitmapSource.
-            BitmapSource bitmap = BitmapSource.Create(width, height,
-                96, 96, pf, null,
-                rawImage, rawStride);
-            return bitmap;
+            return BitmapSource.Create(frame.Image.Width, frame.Image.Height, 0, 0, pf, null, rawImage, rawStride);
         }
 
         private void updateMode(AppMode newMode)
@@ -622,7 +612,7 @@ namespace LiveCameraSample
             scoringSystem.CreateNewRound();
             playerImages = new Dictionary<Guid, CroppedBitmap>();
             this.gameState = GameState.RoundBegin;
-            this.currentTimerTask = TimeSpan.FromSeconds(3);
+            this.currentTimerTask = TimeSpan.FromSeconds(6);
             this.currentTimeTaskStart = DateTime.Now;
         }
 
@@ -669,12 +659,11 @@ namespace LiveCameraSample
                Dispatcher.CurrentDispatcher);
 
             timer.IsEnabled = true;
-
         }
 
         private void t_Tick(object sender, EventArgs e)
         {
-            TimeSpan timeSpan = DateTime.Now - roundStart;
+            TimeSpan timeSpan = currentTimerTask - (DateTime.Now - roundStart);
             timerText = timeSpan.ToString(@"mm\:ss");
         }
     }

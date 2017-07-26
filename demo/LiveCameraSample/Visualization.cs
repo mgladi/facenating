@@ -91,8 +91,6 @@ namespace LiveCameraSample
             var ratio = ((1.0) * baseImage.PixelHeight) / ((1.0) * baseImage.PixelWidth); 
             if (faces == null)
             {
-                /*
-                */
                 return baseImage;
             }
 
@@ -107,7 +105,6 @@ namespace LiveCameraSample
                     // Instead of calling DrawText (which can only draw the text in a solid colour), we
                     // convert to geometry and use DrawGeometry, which allows us to add an outline. 
                     drawingContext.DrawText(ft, new Point(130,30));
-                    
                 }
                 for (int i = 0; i < faces.Length; i++)
                 {
@@ -166,7 +163,7 @@ namespace LiveCameraSample
         }
 
         private static ImageSource lastBitmap;
-        public static ImageSource DrawTime()
+        public static ImageSource DrawTime(string showTime)
         {
 
             if (lastBitmap== null)
@@ -177,8 +174,7 @@ namespace LiveCameraSample
             DrawingContext drawingContext = visual.RenderOpen();
 
 
-            string dt = DateTime.Now.ToString("M/d/yyyy hh:mm:ss");
-            FormattedText ft = new FormattedText(dt,
+            FormattedText ft = new FormattedText(showTime,
                 CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
                 20, Brushes.Yellow);
 
@@ -254,7 +250,22 @@ namespace LiveCameraSample
             return DrawOverlay(baseImage, drawAction, true);
         }
 
-        public static BitmapSource DrawRound(BitmapSource baseImage, string title, string content, Dictionary<Guid, CroppedBitmap> playerImages = null)
+        public static BitmapSource DrawRoundStart(BitmapSource baseImage, IRound round)
+        {
+            Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
+            {
+                var image = round.GetRoundTemplateImage();
+                var faceRect = new Rect(0, 0, baseImage.Width, baseImage.Height);
+                faceRect.Inflate(6 * annotationScale, 6 * annotationScale);
+
+                drawingContext.DrawImage(image, faceRect);
+            };
+
+            return DrawOverlay(baseImage, drawAction);
+        }
+
+
+        public static BitmapSource DrawRoundEnd(BitmapSource baseImage, string title, string content, Dictionary<Guid, int> playerScore, Dictionary<Guid, CroppedBitmap> playerImages = null)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
@@ -269,6 +280,25 @@ namespace LiveCameraSample
 
                 drawingContext.DrawText(titleText, titlePoint);
                 drawingContext.DrawText(contentText, contentPoint);
+
+                if (playerScore != null && playerImages != null)
+                {
+                    int i = 0;
+                    foreach (var player in playerScore)
+                    {
+                        if(playerImages.ContainsKey(player.Key))
+                        {
+                            Rect rect = new Rect(20 + 60 * (i % 2), 90 + 30 * (i / 2), 30, 30);
+                            drawingContext.DrawImage(playerImages[player.Key], rect);
+                            FormattedText scoreText = new FormattedText(player.Value.ToString(),
+                                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 14, Brushes.Black);
+
+                            var scorePoint = new System.Windows.Point(52 + 60 * (i % 2), 95 + 30 * (i / 2));
+                            drawingContext.DrawText(scoreText, scorePoint);
+                            i++;
+                        }
+                    }
+                }
             };
 
             return DrawOverlay(baseImage, drawAction);
@@ -313,11 +343,13 @@ namespace LiveCameraSample
 
                     double lineThickness = 4 * annotationScale;
 
-                    drawingContext.DrawRectangle(
-                        Brushes.Transparent,
-                        new Pen(s_lineBrush, lineThickness),
-                        faceRect);
+                       drawingContext.DrawRectangle(
+                           Brushes.Transparent,
+                           new Pen(s_lineBrush, lineThickness),
+                           faceRect);
+                           
 
+                    //drawingContext.DrawImage(ImageProvider.Frame, faceRect);
                     if (text != "")
                     {
                         FormattedText ft = new FormattedText(text,
