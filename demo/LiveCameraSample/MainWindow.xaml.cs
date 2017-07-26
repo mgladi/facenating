@@ -110,7 +110,7 @@ namespace LiveCameraSample
 
         private DispatcherTimer timer;
         private DateTime roundStart;
-        private string timerText = "";
+        private string timerText = "00:00";
 
         public MainWindow()
         {
@@ -149,7 +149,10 @@ namespace LiveCameraSample
                     {
                         RightImage.Source = VisualizeResult(e.Frame);
                     }
-                    RightImage.Source = VisualizeTimer();
+                    if (gameState == GameState.Game)
+                    {
+                        RightImage.Source = VisualizeTimer();
+                    }
                 }));
 
                 if (DateTime.Now - currentTimeTaskStart > currentTimerTask)
@@ -159,7 +162,7 @@ namespace LiveCameraSample
                         currentTimerTask = TimeSpan.FromSeconds(15);
                         currentTimeTaskStart = DateTime.Now;
                         gameState = GameState.Game;
-
+                        roundStart = DateTime.Now;
                     }
                     else if (gameState == GameState.Game)
                     {
@@ -406,7 +409,7 @@ namespace LiveCameraSample
         {
             // Draw any results on top of the image. 
 
-            return Visualization.DrawTime();
+            return Visualization.DrawTime(timerText);
 
         }
 
@@ -699,7 +702,6 @@ namespace LiveCameraSample
                Dispatcher.CurrentDispatcher);
 
             timer.IsEnabled = true;
-
         }
 
         private void t_Tick(object sender, EventArgs e)
