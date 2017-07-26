@@ -85,7 +85,7 @@ namespace LiveCameraSample
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
         private DateTime _startTime;
-        private const int NumOfRounds = 4;
+        private const int NumOfRounds = 1;
         private IRound round = null;
         private int roundNumber = 0;
 
@@ -426,13 +426,9 @@ namespace LiveCameraSample
         private BitmapSource VisualizeEndRound()
         {
             var bitmap = VisualizeRound();
-            string s = "";
-            int i = 1;
-            foreach (var item in scoringSystem.TotalScore)
-            {
-                s += i++ + ": " + item.Value + "\n";
-            }
-            return Visualization.DrawRound(bitmap, "End round " + roundNumber, "Get Ready...", playerImages);
+            string s = "Round Score:\n";
+
+            return Visualization.DrawRound(bitmap, "End round " + roundNumber, s, scoringSystem.TotalScore, playerImages);
 
         }
         private BitmapSource VisualizeEndGame()
@@ -440,11 +436,8 @@ namespace LiveCameraSample
             var bitmap = VisualizeRound();
             string s = "";
             int i = 1;
-            foreach (var item in scoringSystem.TotalScore)
-            {
-                s += i++ + ": " + item.Value + "\n";
-            }
-            return Visualization.DrawRound(bitmap, "End Game", "And the winner is....", playerImages);
+            Dictionary<Guid,int> winners = scoringSystem.GameWinner();
+            return Visualization.DrawRound(bitmap, "End Game", "And the winner is:", winners, playerImages);
 
         }
         private BitmapSource VisualizeRound()
