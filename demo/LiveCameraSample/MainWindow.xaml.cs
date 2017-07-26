@@ -55,6 +55,7 @@ using System.Threading;
 using System.Windows.Media;
 using Point = System.Windows.Point;
 using System.IO;
+using System.Windows.Threading;
 
 namespace LiveCameraSample
 {
@@ -107,10 +108,15 @@ namespace LiveCameraSample
         private ScoringSystem scoringSystem = new ScoringSystem();
         private Dictionary<Guid, CroppedBitmap> playerImages = new Dictionary<Guid, CroppedBitmap>();
 
+        private DispatcherTimer timer;
+        private DateTime roundStart;
+        private string timerText = "";
+
         public MainWindow()
         {
             currentGroupId = currentGroupName;
             InitializeComponent();
+            StartTimer();
 
             // Create grabber. 
             _grabber = new FrameGrabber<LiveCameraResult>();
@@ -292,15 +298,26 @@ namespace LiveCameraSample
             Face[] faces = await _faceClient.DetectAsync(jpg, returnFaceAttributes: attrs);
             Guid[] faceIds = faces.Select(face => face.FaceId).ToArray();
 
-            IdentifyResult[] identities = await _faceClient.IdentifyAsync(currentGroupId, faceIds);
-            var identityDict = identities.Where(i => i.Candidates.Length > 0).ToDictionary(i => i.Candidates[0].PersonId, i => faces.First(f => f.FaceId == i.FaceId));
-
-            return new LiveCameraResult
+            
+            var liveCameraResult = new LiveCameraResult
             {
-                Identities = identityDict,
                 Faces = faces,
                 EmotionScores = faces.Select(f => f.FaceAttributes.Emotion).ToArray()
             };
+
+            try
+            {
+                IdentifyResult[] identities = await _faceClient.IdentifyAsync(currentGroupId, faceIds);
+                var identityDict = identities.Where(i => i.Candidates.Length > 0).ToDictionary(i => i.Candidates[0].PersonId, i => faces.First(f => f.FaceId == i.FaceId));
+
+                liveCameraResult.Identities = identityDict;
+            }
+            catch (Exception e)
+            {
+
+            }
+
+            return liveCameraResult;
         }
 
         /// <summary> Function which submits a frame to the Computer Vision API for tagging. </summary>
@@ -406,6 +423,11 @@ namespace LiveCameraSample
 
         private void SavePlayerImages(BitmapSource image, LiveCameraResult result)
         {
+            if (result == null || result.Identities == null)
+            {
+                return;
+            }
+
             foreach (var player in result.Identities)
             {
                 Int32Rect faceRectangle = new Int32Rect(player.Value.FaceRectangle.Left, player.Value.FaceRectangle.Top, player.Value.FaceRectangle.Width, player.Value.FaceRectangle.Height);
@@ -675,6 +697,24 @@ namespace LiveCameraSample
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             StartButton();
+        }
+
+        private void StartTimer()
+        {
+            timer = new DispatcherTimer(
+               new TimeSpan(0, 0, 0, 0, 50),
+               DispatcherPriority.Background,
+               t_Tick,
+               Dispatcher.CurrentDispatcher);
+
+            timer.IsEnabled = true;
+
+        }
+
+        private void t_Tick(object sender, EventArgs e)
+        {
+            TimeSpan timeSpan = DateTime.Now - roundStart;
+            timerText = timeSpan.ToString(@"mm\:ss");
         }
     }
 }
