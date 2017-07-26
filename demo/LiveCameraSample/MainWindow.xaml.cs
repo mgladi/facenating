@@ -321,9 +321,6 @@ namespace LiveCameraSample
                     if (identity.Candidates.Length > 0 && identity.Candidates[0].Confidence > 0.6)
                     {
                         identityDict[identity.Candidates[0].PersonId] = faces.First(f => f.FaceId == identity.FaceId);
-
-                        
-                        identityDict[identity.Candidates[0].PersonId].FaceAttributes.Noise.Value = identity.Candidates[0].Confidence;
                     }
                 }
 
