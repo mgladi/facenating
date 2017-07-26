@@ -13,6 +13,7 @@ namespace LiveCameraSample
         string GetRoundDescription();
         string GetRoundTarget();
         BitmapImage GetRoundTemplateImage();
+        BitmapImage GetRoundIndicator();
         string GetRoundImageText();
         Dictionary<Guid, int> ComputeFrameScorePerPlayer(LiveCameraResult result);
     }

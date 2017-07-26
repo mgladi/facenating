@@ -182,10 +182,10 @@ namespace LiveCameraSample
         }
 
         private static ImageSource lastBitmap;
-        public static ImageSource DrawTime(string showTime)
+        public static ImageSource DrawTime(string showTime, bool drawIndicator, IRound round)
         {
 
-            if (lastBitmap== null)
+            if (lastBitmap == null)
             {
                 return lastBitmap;
             }
@@ -200,6 +200,16 @@ namespace LiveCameraSample
 
             drawingContext.DrawText(ft, new Point(550, 0));
 
+            if (drawIndicator)
+            {
+                drawingContext.DrawImage(round.GetRoundIndicator(), new Rect(570, 410, 70, 70));
+
+                FormattedText targetText = new FormattedText(round.GetRoundImageText(),
+                    CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
+                    20, Brushes.White);
+
+                drawingContext.DrawText(targetText, new Point(600, 440));
+            }
             drawingContext.Close();
 
             RenderTargetBitmap outputBitmap = new RenderTargetBitmap(
@@ -210,6 +220,7 @@ namespace LiveCameraSample
 
             return outputBitmap;
         }
+
 
         public static BitmapSource DrawRoundStart(BitmapSource baseImage, IRound round, int roundNum)
         {
@@ -332,7 +343,7 @@ namespace LiveCameraSample
 
         }
 
-        public static BitmapSource DrawFaces(BitmapSource baseImage, Dictionary<Guid, Microsoft.ProjectOxford.Face.Contract.Face> identities, ScoringSystem scoring, MainWindow.AppMode mode)
+        public static BitmapSource DrawFaces(BitmapSource baseImage, IRound round, Dictionary<Guid, Microsoft.ProjectOxford.Face.Contract.Face> identities, ScoringSystem scoring, MainWindow.AppMode mode)
         {
             if (identities == null)
             {
@@ -404,6 +415,8 @@ namespace LiveCameraSample
                         drawingContext.DrawRectangle(brush, null, rect);
                         drawingContext.DrawText(ft, origin);
                     }
+
+                    drawingContext.DrawImage(round.GetRoundIndicator(), new Rect(570, 410, 70, 70));
                 }
             };
 

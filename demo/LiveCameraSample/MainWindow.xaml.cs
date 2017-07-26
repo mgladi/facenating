@@ -88,7 +88,7 @@ namespace LiveCameraSample
         private bool _fuseClientRemoteResults;
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
-        private const int NumOfRounds = 1;
+        private const int NumOfRounds = 4;
         private IRound round = null;
         private int roundNumber = 0;
 
@@ -160,6 +160,8 @@ namespace LiveCameraSample
                     {
                         RightImage.Source = VisualizeResult(e.Frame);
                     }
+
+                    
                 }));
 
                 if (DateTime.Now - currentTimeTaskStart > currentTimerTask)
@@ -253,7 +255,12 @@ namespace LiveCameraSample
                         }
                         if (gameState == GameState.Game || gameState == GameState.RoundBegin)
                         {
-                            RightImage.Source = VisualizeTimer();
+                            bool drawIndicator = false;
+                            if (gameState == GameState.Game)
+                            {
+                                drawIndicator = true;
+                            }
+                            RightImage.Source = VisualizeTimer(drawIndicator);
                         }
                     }
                 }));
@@ -283,12 +290,15 @@ namespace LiveCameraSample
 
         private void T_Elapsed(object sender, ElapsedEventArgs e)
         {
-            int r = rnd.Next(images.Count);
-            var image = images[r];
-            this.Dispatcher.BeginInvoke((Action)(() =>
+            if (images.Count > 0)
             {
-                LeftImage.Source = image;
-            }));
+                int r = rnd.Next(images.Count);
+                var image = images[r];
+                this.Dispatcher.BeginInvoke((Action)(() =>
+                {
+                    LeftImage.Source = image;
+                }));
+            }
         }
 
         /// <summary> Function which submits a frame to the Face API. </summary>
@@ -419,7 +429,7 @@ namespace LiveCameraSample
                     scoringSystem.AddToCurrentRound(scores);
                     visImage = Visualization.DrawSomething(visImage, round.GetRoundTarget(), new Point(0, 0));
 
-                    visImage = Visualization.DrawFaces(visImage, result.Identities, scoringSystem, _mode);
+                    visImage = Visualization.DrawFaces(visImage, round, result.Identities, scoringSystem, _mode);
 
                     SavePlayerImages(visImage, frame.Image.ToBitmapSource(), result);
                 }
@@ -437,13 +447,17 @@ namespace LiveCameraSample
         }
 
 
-        private ImageSource VisualizeTimer()
+        private ImageSource VisualizeTimer(bool drawIndicator)
         {
             // Draw any results on top of the image. 
 
-            return Visualization.DrawTime(timerText);
+            return Visualization.DrawTime(timerText, drawIndicator, round);
 
         }
+
+
+
+
 
         private void SavePlayerImages(BitmapSource image, BitmapSource imageFromFrame, LiveCameraResult result)
         {
