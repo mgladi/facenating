@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
 namespace LiveCameraSample
 {
     public static class ImageProvider
     {
-        public static BitmapImage HappyRound { get
+        public static BitmapImage HappyRound
+        {
+            get
             {
-                string fullPath = Path.GetFullPath("Data/happy_round_template.png");
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
@@ -21,7 +19,63 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/sad_round_template.png");
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                return new BitmapImage(new Uri(fullPath));
+            }
+        }
+        public static BitmapImage AngryRound
+        {
+            get
+            {
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                return new BitmapImage(new Uri(fullPath));
+            }
+        }
+        public static BitmapImage DisgussedRound
+        {
+            get
+            {
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                return new BitmapImage(new Uri(fullPath));
+            }
+        }
+        public static BitmapImage ContemptRound
+        {
+            get
+            {
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                return new BitmapImage(new Uri(fullPath));
+            }
+        }
+        public static BitmapImage NeutralRound
+        {
+            get
+            {
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                return new BitmapImage(new Uri(fullPath));
+            }
+        }
+        public static BitmapImage SuprisedRound
+        {
+            get
+            {
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                return new BitmapImage(new Uri(fullPath));
+            }
+        }
+        public static BitmapImage FearRound
+        {
+            get
+            {
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                return new BitmapImage(new Uri(fullPath));
+            }
+        }
+        public static BitmapImage AgeRound
+        {
+            get
+            {
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }

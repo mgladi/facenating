@@ -103,25 +103,24 @@ namespace LiveCameraSample
 
         public BitmapImage GetRoundTemplateImage()
         {
-
             switch (this.targetEmotion)
             {
                 case EmotionType.Anger:
-                    return ImageProvider.HappyRound;
+                    return ImageProvider.AngryRound;
                 case EmotionType.Contempt:
-                    return ImageProvider.HappyRound;
+                    return ImageProvider.ContemptRound;
                 case EmotionType.Disgust:
-                    return ImageProvider.HappyRound;
+                    return ImageProvider.DisgussedRound;
                 case EmotionType.Fear:
-                    return ImageProvider.HappyRound;
+                    return ImageProvider.FearRound;
                 case EmotionType.Happiness:
                     return ImageProvider.HappyRound;
                 case EmotionType.Neutral:
-                    return ImageProvider.HappyRound;
+                    return ImageProvider.NeutralRound;
                 case EmotionType.Sadness:
-                    return ImageProvider.HappyRound;
+                    return ImageProvider.SadRound;
                 case EmotionType.Surprise:
-                    return ImageProvider.HappyRound;
+                    return ImageProvider.SuprisedRound;
                 default:
                     break;
             }

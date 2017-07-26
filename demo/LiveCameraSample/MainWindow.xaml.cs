@@ -63,6 +63,7 @@ namespace LiveCameraSample
     public enum GameState
     {
         Participants,
+        Explain,
         RoundBegin,
         Game,
         RoundEnd,
@@ -92,6 +93,7 @@ namespace LiveCameraSample
         public enum AppMode
         {
             Participants,
+
             Faces,
             Emotions,
             EmotionsWithClientFaceDetect,
@@ -154,7 +156,11 @@ namespace LiveCameraSample
 
                 if (DateTime.Now - currentTimeTaskStart > currentTimerTask)
                 {
-                    if (gameState == GameState.RoundBegin)
+                    if (gameState == GameState.Explain)
+                    {
+                        nextRound();
+                    }
+                    else if (gameState == GameState.RoundBegin)
                     {
                         currentTimerTask = TimeSpan.FromSeconds(15);
                         currentTimeTaskStart = DateTime.Now;
@@ -337,7 +343,11 @@ namespace LiveCameraSample
                     MatchAndReplaceFaceRectangles(result.Faces, clientFaces);
                 }
 
-                if (this.gameState == GameState.RoundBegin)
+                if (this.gameState == GameState.Explain)
+                {
+                    visImage = Visualization.DrawExplain(visImage);
+                }
+                else if (this.gameState == GameState.RoundBegin)
                 {
                     visImage = VisualizeStartRound(frame);
                 }
@@ -401,7 +411,7 @@ namespace LiveCameraSample
             var bitmap = VisualizeRound(frame);
             var description = round.GetRoundDescription();
             
-            return Visualization.DrawRoundStart(bitmap, round);
+            return Visualization.DrawRoundStart(bitmap, round, roundNumber);
         }
 
         private BitmapSource VisualizeEndRound(VideoFrame frame)
@@ -575,7 +585,9 @@ namespace LiveCameraSample
             var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
             byte[] streamBytes = ReadFully(otherJpg);
 
-            nextRound();
+            this.gameState = GameState.Explain;
+            this.currentTimerTask = TimeSpan.FromSeconds(15);
+            this.currentTimeTaskStart = DateTime.Now;
 
             //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
             await _faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);

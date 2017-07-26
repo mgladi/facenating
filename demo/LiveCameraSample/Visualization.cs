@@ -250,15 +250,28 @@ namespace LiveCameraSample
             return DrawOverlay(baseImage, drawAction, true);
         }
 
-        public static BitmapSource DrawRoundStart(BitmapSource baseImage, IRound round)
+        public static BitmapSource DrawRoundStart(BitmapSource baseImage, IRound round, int roundNum)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
                 var image = round.GetRoundTemplateImage();
                 var faceRect = new Rect(0, 0, baseImage.Width, baseImage.Height);
-                faceRect.Inflate(6 * annotationScale, 6 * annotationScale);
+                //faceRect.Inflate(6 * annotationScale, 6 * annotationScale);
 
                 drawingContext.DrawImage(image, faceRect);
+
+                FormattedText targetText = new FormattedText(round.GetRoundImageText(),
+                    CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 30, Brushes.White);
+
+                var targetPoint = new System.Windows.Point(70,160);
+                drawingContext.DrawText(targetText, targetPoint);
+
+                FormattedText roundNmberText = new FormattedText(roundNum.ToString(),
+                    CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 40, Brushes.White);
+
+                var roundNumberPoint = new System.Windows.Point(200, 13);
+                drawingContext.DrawText(roundNmberText, roundNumberPoint);
+
             };
 
             return DrawOverlay(baseImage, drawAction);
@@ -302,6 +315,23 @@ namespace LiveCameraSample
             };
 
             return DrawOverlay(baseImage, drawAction);
+        }
+
+        public static BitmapSource DrawExplain(BitmapSource baseImage)
+        {
+            Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
+            {
+
+                FormattedText ft = new FormattedText("Explanation text",
+                    CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
+                    16 * annotationScale, Brushes.Black);
+
+                var origin = new System.Windows.Point(100, 100);
+                drawingContext.DrawText(ft, origin);
+            };
+
+            return DrawOverlay(baseImage, drawAction, false);
+
         }
 
         public static BitmapSource DrawFaces(BitmapSource baseImage, Dictionary<Guid, Microsoft.ProjectOxford.Face.Contract.Face> identities, ScoringSystem scoring, MainWindow.AppMode mode)
