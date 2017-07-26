@@ -10,7 +10,6 @@ namespace LiveCameraSample
     public enum EmotionType
     {
         Anger,
-        Contempt,
         Disgust,
         Fear,
         Happiness,
@@ -107,8 +106,6 @@ namespace LiveCameraSample
             {
                 case EmotionType.Anger:
                     return ImageProvider.AngryRound;
-                case EmotionType.Contempt:
-                    return ImageProvider.ContemptRound;
                 case EmotionType.Disgust:
                     return ImageProvider.DisgussedRound;
                 case EmotionType.Fear:

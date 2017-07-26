@@ -151,12 +151,16 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Data\round_happy.png" >
-	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <Content Include="Data\round_angry.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    
-	
-    <Content Include="Data\sad_round_template.png">
+    <Content Include="Data\round_happy.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\round_sad.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\round_suprised.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Data\start_button.png">
