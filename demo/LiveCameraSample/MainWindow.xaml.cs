@@ -109,6 +109,8 @@ namespace LiveCameraSample
         private DispatcherTimer timer;
         private DateTime roundStart;
         private string timerText = "00:00";
+        private MediaPlayer backgroundMusic;
+        private MediaPlayer sound;
 
         private Dictionary<Guid, List<CroppedBitmap>> playerImages = new Dictionary<Guid, List<CroppedBitmap>>();
         private DateTime lastPlayerImagesTime = DateTime.MinValue;
@@ -119,6 +121,8 @@ namespace LiveCameraSample
             currentGroupId = currentGroupName;
             InitializeComponent();
             StartTimer();
+            this.backgroundMusic = SoundProvider.Ukulele;
+            this.backgroundMusic.Play();
 
             // Create grabber. 
             _grabber = new FrameGrabber<LiveCameraResult>();
@@ -172,13 +176,14 @@ namespace LiveCameraSample
                         currentTimerTask = TimeSpan.FromSeconds(3);
                         currentTimeTaskStart = DateTime.Now;
                         gameState = GameState.RoundEnd;
-                        scoringSystem.CreateNewRound();
+                        scoringSystem.AddRoundToGameScore();
                     }
                     else if (gameState == GameState.RoundEnd)
                     {
                         if (roundNumber == NumOfRounds)
                         {
-                            SoundProvider.TheWinner.Play();
+                            this.sound = SoundProvider.TheWinner;
+                            this.sound.Play();
                             currentTimerTask = TimeSpan.FromSeconds(3);
                             gameState = GameState.GameEnd;
                             this.Dispatcher.BeginInvoke((Action)(() =>
@@ -449,7 +454,7 @@ namespace LiveCameraSample
             var bitmap = VisualizeRound(frame);
             string s = "Round Score:\n";
 
-            return Visualization.DrawRoundEnd(bitmap, "End round " + roundNumber, s, scoringSystem.TotalScore, playerImages);
+            return Visualization.DrawRoundEnd(bitmap, "End round " + roundNumber, s, scoringSystem.CurrentRoundScore, playerImages, scoringSystem.TotalScore);
 
         }
         private BitmapSource VisualizeEndGame(VideoFrame frame)
@@ -589,11 +594,13 @@ namespace LiveCameraSample
                 var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
                 byte[] streamBytes = ReadFully(otherJpg);
 
-                SoundProvider.PrepareYourself.Play();
+                this.sound = SoundProvider.PrepareYourself;
+                this.sound.Play();
                 this.gameState = GameState.Explain;
                 this.currentTimerTask = TimeSpan.FromSeconds(3);
                 this.currentTimeTaskStart = DateTime.Now;
                 button.Visibility = Visibility.Hidden;
+                this.currentTimeTaskStart = DateTime.Now;
 
                 //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
                 await _faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
@@ -638,7 +645,8 @@ namespace LiveCameraSample
                 roundNumber++;
             }
 
-            SoundProvider.Round(roundNumber).Play();
+            this.sound = SoundProvider.Round(roundNumber);
+            this.sound.Play();
             round = getRandomRound();
             scoringSystem.CreateNewRound();
             this.gameState = GameState.RoundBegin;

@@ -42,16 +42,19 @@ namespace GameSystem
 
         public void CreateNewRound()
         {
+            CurrentRoundScore = new Dictionary<Guid, int>();
+        }
+
+        public void AddRoundToGameScore()
+        {
             foreach (var item in CurrentRoundScore)
             {
                 if (!TotalScore.ContainsKey(item.Key))
                 {
-
                     TotalScore[item.Key] = 0;
                 }
                 TotalScore[item.Key] += CurrentRoundScore[item.Key];
             }
-            CurrentRoundScore = new Dictionary<Guid, int>();
         }
 
         public Dictionary<Guid,int> GameWinner()
