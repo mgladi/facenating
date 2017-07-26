@@ -86,7 +86,7 @@ namespace LiveCameraSample
         private bool _fuseClientRemoteResults;
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
-        private const int NumOfRounds =4;
+        private const int NumOfRounds = 5;
         private IRound round = null;
         private int roundNumber = 0;
 
@@ -176,6 +176,7 @@ namespace LiveCameraSample
                     {
                         if (roundNumber == NumOfRounds)
                         {
+                            SoundProvider.TheWinner.Play();
                             currentTimerTask = TimeSpan.FromSeconds(3);
                             gameState = GameState.GameEnd;
                             _grabber.StopProcessingAsync();
@@ -524,35 +525,6 @@ namespace LiveCameraSample
                 }
             };
         }
-
-        private Face CreateFace(Microsoft.ProjectOxford.Vision.Contract.FaceRectangle rect)
-        {
-            return new Face
-            {
-                FaceRectangle = new FaceRectangle
-                {
-                    Left = rect.Left,
-                    Top = rect.Top,
-                    Width = rect.Width,
-                    Height = rect.Height
-                }
-            };
-        }
-
-        private Face CreateFace(Microsoft.ProjectOxford.Common.Rectangle rect)
-        {
-            return new Face
-            {
-                FaceRectangle = new FaceRectangle
-                {
-                    Left = rect.Left,
-                    Top = rect.Top,
-                    Width = rect.Width,
-                    Height = rect.Height
-                }
-            };
-        }
-
         private void MatchAndReplaceFaceRectangles(Face[] faces, OpenCvSharp.Rect[] clientRects)
         {
             // Use a simple heuristic for matching the client-side faces to the faces in the
@@ -586,6 +558,7 @@ namespace LiveCameraSample
             var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
             byte[] streamBytes = ReadFully(otherJpg);
 
+            SoundProvider.PrepareYourself.Play();
             this.gameState = GameState.Explain;
             this.currentTimerTask = TimeSpan.FromSeconds(15);
             this.currentTimeTaskStart = DateTime.Now;
@@ -616,6 +589,7 @@ namespace LiveCameraSample
                 roundNumber++;
             }
 
+            SoundProvider.Round(roundNumber).Play();
             round = getRandomRound();
             scoringSystem.CreateNewRound();
             playerImages = new Dictionary<Guid, CroppedBitmap>();
