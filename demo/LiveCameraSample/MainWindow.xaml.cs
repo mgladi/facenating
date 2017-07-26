@@ -51,10 +51,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using VideoFrameAnalyzer;
 using GameSystem;
-using System.Threading;
 using System.Windows.Media;
 using Point = System.Windows.Point;
 using System.IO;
+using System.Timers;
 using System.Windows.Threading;
 
 namespace LiveCameraSample
@@ -75,6 +75,8 @@ namespace LiveCameraSample
     /// </summary>
     public partial class MainWindow : System.Windows.Window
     {
+        private static Random rnd = new Random();
+
         private EmotionServiceClient _emotionClient = null;
         private FaceServiceClient _faceClient = null;
         private VisionServiceClient _visionClient = null;
@@ -86,7 +88,7 @@ namespace LiveCameraSample
         private bool _fuseClientRemoteResults;
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
-        private const int NumOfRounds = 5;
+        private const int NumOfRounds = 1;
         private IRound round = null;
         private int roundNumber = 0;
 
@@ -124,6 +126,7 @@ namespace LiveCameraSample
             StartTimer();
             this.backgroundMusic = SoundProvider.Ukulele;
             this.backgroundMusic.Play();
+            t.Elapsed += T_Elapsed;
 
             // Create grabber. 
             _grabber = new FrameGrabber<LiveCameraResult>();
@@ -189,6 +192,8 @@ namespace LiveCameraSample
                             gameState = GameState.GameEnd;
                             this.Dispatcher.BeginInvoke((Action)(() =>
                             {
+                                StartEndImages();
+
                                 button.Visibility = Visibility.Visible;
                             }));
                            
@@ -255,7 +260,34 @@ namespace LiveCameraSample
 
             // Create local face detector. 
             _localFaceDetector.Load("Data/haarcascade_frontalface_alt2.xml");
+        }
 
+        List<BitmapSource> images = new List<BitmapSource>();
+
+        System.Timers.Timer t = new System.Timers.Timer(3000);
+        private void StartEndImages()
+        {
+            images.Clear();
+            if (groupImages != null)
+            {
+                foreach (var item in groupImages)
+                {
+                    //                        CroppedBitmap cropped = new CroppedBitmap(item, new Int32Rect(0, 0, 480, 640));
+                    images.Add(item);
+                }
+                t.Start();
+
+            }
+        }
+
+        private void T_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            int r = rnd.Next(images.Count);
+            var image = images[r];
+            this.Dispatcher.BeginInvoke((Action)(() =>
+            {
+                LeftImage.Source = image;
+            }));
         }
 
         /// <summary> Function which submits a frame to the Face API. </summary>
@@ -388,7 +420,7 @@ namespace LiveCameraSample
 
                     visImage = Visualization.DrawFaces(visImage, result.Identities, scoringSystem, _mode);
 
-                    SavePlayerImages(visImage, result);
+                    SavePlayerImages(visImage, frame.Image.ToBitmapSource(), result);
                 }
                 else if (this.gameState == GameState.Participants)
                 {
@@ -412,7 +444,7 @@ namespace LiveCameraSample
 
         }
 
-        private void SavePlayerImages(BitmapSource image, LiveCameraResult result)
+        private void SavePlayerImages(BitmapSource image, BitmapSource imageFromFrame, LiveCameraResult result)
         {
             if (result == null || result.Identities == null || this.gameState != GameState.Game)
             {
@@ -421,13 +453,13 @@ namespace LiveCameraSample
 
             if (DateTime.Now.AddSeconds(-playerImagesTimeOffsetSec) > this.lastPlayerImagesTime)
             {
-                this.groupImages.Add(image);
+                this.groupImages.Add(imageFromFrame);
 
                 foreach (var player in result.Identities)
                 {
                     int offset = 0;
                     Int32Rect faceRectangle = new Int32Rect(player.Value.FaceRectangle.Left + offset, player.Value.FaceRectangle.Top + offset, player.Value.FaceRectangle.Width + offset, player.Value.FaceRectangle.Height + offset);
-                    CroppedBitmap playerImage = new CroppedBitmap(image, faceRectangle);
+                    CroppedBitmap playerImage = new CroppedBitmap(imageFromFrame, faceRectangle);
 
                     if (playerImages.ContainsKey(player.Key))
                     {                      
@@ -625,6 +657,9 @@ namespace LiveCameraSample
                 currentGroupId = Guid.NewGuid().ToString();
                 currentGroupName = currentGroupId;
                 roundNumber = 0;
+                t.Stop();
+                groupImages = new List<BitmapSource>();
+                playerImages = new Dictionary<Guid, List<CroppedBitmap>>();
                 this.Dispatcher.BeginInvoke((Action)(() =>
                 {
                     button.Content = "Start Game";
