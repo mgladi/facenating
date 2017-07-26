@@ -79,5 +79,9 @@ namespace LiveCameraSample
             return scoresDictionary;
         }
 
+        public BitmapImage GetRoundIndicator()
+        {
+            return ImageProvider.HappyIndicator;
+        }
     }
 }

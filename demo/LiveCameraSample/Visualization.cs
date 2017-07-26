@@ -52,7 +52,6 @@ namespace LiveCameraSample
     public class Visualization
     {
         private static SolidColorBrush s_lineBrush = new SolidColorBrush(new System.Windows.Media.Color { R = 255, G = 185, B = 0, A = 255 });
-        private static Random rnd = new Random();
         private static SolidColorBrush s_lineBrush1 = new SolidColorBrush(new System.Windows.Media.Color { R = 26, G = 130, B = 196, A = 255 });
         private static SolidColorBrush s_lineBrush2 = new SolidColorBrush(new System.Windows.Media.Color { R = 255, G = 203, B = 57, A = 255});
         private static SolidColorBrush s_lineBrush3 = new SolidColorBrush(new System.Windows.Media.Color { R = 241, G = 91, B = 96, A = 255});
@@ -63,7 +62,7 @@ namespace LiveCameraSample
 
         private static Typeface s_typeface = new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
         private static int latestBrushIndex = 0;
-
+        
         private static SolidColorBrush GetLatestBrush()
         {
             if (latestBrushIndex == 5)
@@ -102,7 +101,7 @@ namespace LiveCameraSample
 
         public static BitmapSource DrawParticipants(BitmapSource baseImage, Microsoft.ProjectOxford.Face.Contract.Face[] faces)
         {
-
+            var fullRect = new Rect(0, 0, baseImage.PixelWidth, baseImage.PixelHeight);
             var rect1 = new Rect(0, 0, baseImage.PixelWidth / 2, baseImage.PixelHeight / 2);
             var rect2 = new Rect(0, baseImage.PixelHeight/ 2, baseImage.PixelWidth / 2, baseImage.PixelHeight / 2);
             var rect3 = new Rect(baseImage.PixelWidth / 2, 0, baseImage.PixelWidth / 2, baseImage.PixelHeight / 2);
@@ -119,12 +118,7 @@ namespace LiveCameraSample
 
                 if (faces.Length == 0)
                 {
-                    FormattedText ft = new FormattedText("Please stand\nin front of\nthe camera",
-                        CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
-                        42, Brushes.Black);
-                    // Instead of calling DrawText (which can only draw the text in a solid colour), we
-                    // convert to geometry and use DrawGeometry, which allows us to add an outline. 
-                    drawingContext.DrawText(ft, new Point(130,30));
+                    drawingContext.DrawImage(ImageProvider.WaitingForPlayers, fullRect);
                 }
                 for (int i = 0; i < faces.Length; i++)
                 {
@@ -141,11 +135,6 @@ namespace LiveCameraSample
                         var newFaceHeight = faceRect.Height * 1.6;
                         var newFaceX = faceRect.X - (faceRect.Width * 0.52);
                         var newFaceWidth = faceRect.Width* 2.13;
-
-                        int rectWidth = (int)(baseImage.Width / 2);
-                        int rectHeight = (int)(baseImage.Height/ 2);
-                        int xOffset = (((int)rectWidth - (int)faceRect.Width) / 2);
-                        int yOffset = (((int)rectHeight - (int)faceRect.Height) / 2);
 
                         if (newFaceX < 0)
                         {
@@ -183,10 +172,10 @@ namespace LiveCameraSample
         }
 
         private static ImageSource lastBitmap;
-        public static ImageSource DrawTime(string showTime)
+        public static ImageSource DrawTime(string showTime, bool drawIndicator, IRound round)
         {
 
-            if (lastBitmap== null)
+            if (lastBitmap == null)
             {
                 return lastBitmap;
             }
@@ -201,6 +190,16 @@ namespace LiveCameraSample
 
             drawingContext.DrawText(ft, new Point(550, 0));
 
+            if (drawIndicator)
+            {
+                drawingContext.DrawImage(round.GetRoundIndicator(), new Rect(570, 410, 70, 70));
+
+                FormattedText targetText = new FormattedText(round.GetRoundImageText(),
+                    CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
+                    20, Brushes.White);
+
+                drawingContext.DrawText(targetText, new Point(600, 440));
+            }
             drawingContext.Close();
 
             RenderTargetBitmap outputBitmap = new RenderTargetBitmap(
@@ -211,6 +210,7 @@ namespace LiveCameraSample
 
             return outputBitmap;
         }
+
 
         public static BitmapSource DrawRoundStart(BitmapSource baseImage, IRound round, int roundNum)
         {
@@ -300,42 +300,7 @@ namespace LiveCameraSample
                 var contentPoint = new System.Windows.Point(20, 60);
 
                 drawingContext.DrawText(titleText, titlePoint);
-
-                if (playerScore != null && playerImages != null)
-                {
-                    int i = 0;
-                    foreach (var player in playerScore)
-                    {
-                        if (playerImages.ContainsKey(player.Key))
-                        {
-                            Rect rect = new Rect(20 + 60 * (i % 2), 90 + 30 * (i / 2), 30, 30);
-                            drawingContext.DrawImage(playerImages[player.Key][0], rect); //TODO
-                            FormattedText scoreText = new FormattedText(player.Value.ToString(),
-                                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 14, Brushes.Black);
-
-                            var scorePoint = new System.Windows.Point(52 + 60 * (i % 2), 95 + 30 * (i / 2));
-                            drawingContext.DrawText(scoreText, scorePoint);
-                            i++;
-                        }
-                    }
-                }
-
                 
-                if (playerImages != null )
-                {
-                    List<CroppedBitmap> images = new List<CroppedBitmap>();
-                    foreach (var item in playerImages)
-                    {
-                        foreach (var image in item.Value)
-                        {
-                            images.Add(image);
-                        }
-                    }
-
-                    int r = rnd.Next(images.Count);
-                    drawingContext.DrawImage(images[r], new Rect(100,200,250, 200)); //TODO
-
-                }
             };
 
             return DrawOverlay(baseImage, drawAction);
@@ -360,7 +325,7 @@ namespace LiveCameraSample
 
         }
 
-        public static BitmapSource DrawFaces(BitmapSource baseImage, Dictionary<Guid, Microsoft.ProjectOxford.Face.Contract.Face> identities, ScoringSystem scoring, MainWindow.AppMode mode)
+        public static BitmapSource DrawFaces(BitmapSource baseImage, IRound round, Dictionary<Guid, Microsoft.ProjectOxford.Face.Contract.Face> identities, ScoringSystem scoring, MainWindow.AppMode mode)
         {
             if (identities == null)
             {
@@ -432,6 +397,8 @@ namespace LiveCameraSample
                         drawingContext.DrawRectangle(brush, null, rect);
                         drawingContext.DrawText(ft, origin);
                     }
+
+                    drawingContext.DrawImage(round.GetRoundIndicator(), new Rect(570, 410, 70, 70));
                 }
             };
 

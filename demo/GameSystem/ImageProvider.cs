@@ -162,6 +162,15 @@ namespace LiveCameraSample
             }
         }
 
+        public static BitmapImage WaitingForPlayers
+        {
+            get
+            {
+                string fullPath = Path.GetFullPath("Data/start_game.png");
+                return new BitmapImage(new Uri(fullPath));
+            }
+        }
+
         public static BitmapImage EndRound
         {
             get

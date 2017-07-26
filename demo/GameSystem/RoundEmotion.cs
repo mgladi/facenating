@@ -128,5 +128,29 @@ namespace LiveCameraSample
         {
             return this.targetScore.ToString();
         }
+
+        public BitmapImage GetRoundIndicator()
+        {
+            switch (this.targetEmotion)
+            {
+                case EmotionType.Anger:
+                    return ImageProvider.AngryIndicator;
+                case EmotionType.Disgust:
+                    return ImageProvider.DisgustIndicator;
+                case EmotionType.Fear:
+                    return ImageProvider.FearIndicator;
+                case EmotionType.Happiness:
+                    return ImageProvider.HappyIndicator;
+                case EmotionType.Neutral:
+                    return ImageProvider.NeurtalIndicator;
+                case EmotionType.Sadness:
+                    return ImageProvider.SadIndicator;
+                case EmotionType.Surprise:
+                    return ImageProvider.SuprisedIndicator;
+                default:
+                    break;
+            }
+            return null;
+        }
     }
 }
