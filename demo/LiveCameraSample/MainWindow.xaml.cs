@@ -104,12 +104,15 @@ namespace LiveCameraSample
         private TimeSpan currentTimerTask = TimeSpan.FromSeconds(6);
         private DateTime currentTimeTaskStart;
         private GameState gameState = GameState.Participants;
-        private ScoringSystem scoringSystem = new ScoringSystem();
-        private Dictionary<Guid, CroppedBitmap> playerImages = new Dictionary<Guid, CroppedBitmap>();
+        private ScoringSystem scoringSystem = new ScoringSystem(); 
 
         private DispatcherTimer timer;
         private DateTime roundStart;
         private string timerText = "00:00";
+
+        private Dictionary<Guid, List<CroppedBitmap>> playerImages = new Dictionary<Guid, List<CroppedBitmap>>();
+        private DateTime lastPlayerImagesTime = DateTime.MinValue;
+        private int playerImagesTimeOffsetSec;
 
         public MainWindow()
         {
@@ -400,18 +403,30 @@ namespace LiveCameraSample
 
         private void SavePlayerImages(BitmapSource image, LiveCameraResult result)
         {
-            if (result == null || result.Identities == null)
+            if (result == null || result.Identities == null || this.gameState != GameState.Game)
             {
                 return;
             }
 
-            foreach (var player in result.Identities)
+            if (DateTime.Now.AddSeconds(-playerImagesTimeOffsetSec) > this.lastPlayerImagesTime)
             {
-                Int32Rect faceRectangle = new Int32Rect(player.Value.FaceRectangle.Left, player.Value.FaceRectangle.Top, player.Value.FaceRectangle.Width, player.Value.FaceRectangle.Height);
-                CroppedBitmap playerImage = new CroppedBitmap(image, faceRectangle);
+                foreach (var player in result.Identities)
+                {
+                    int offset = 0;
+                    Int32Rect faceRectangle = new Int32Rect(player.Value.FaceRectangle.Left + offset, player.Value.FaceRectangle.Top + offset, player.Value.FaceRectangle.Width + offset, player.Value.FaceRectangle.Height + offset);
+                    CroppedBitmap playerImage = new CroppedBitmap(image, faceRectangle);
 
-                playerImages[player.Key] = playerImage;
-            }            
+                    if (playerImages.ContainsKey(player.Key))
+                    {
+                        playerImages[player.Key] = new List<CroppedBitmap>() { playerImage };
+                    }
+                    else
+                    {
+                        playerImages[player.Key].Add(playerImage);
+                    }
+                    
+                }
+            }       
         }
 
         private BitmapSource VisualizeStartRound(VideoFrame frame)
@@ -626,7 +641,6 @@ namespace LiveCameraSample
 
             round = getRandomRound();
             scoringSystem.CreateNewRound();
-            playerImages = new Dictionary<Guid, CroppedBitmap>();
             this.gameState = GameState.RoundBegin;
             this.currentTimerTask = TimeSpan.FromSeconds(6);
             this.currentTimeTaskStart = DateTime.Now;
