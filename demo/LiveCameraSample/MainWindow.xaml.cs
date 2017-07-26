@@ -55,6 +55,7 @@ using System.Threading;
 using System.Windows.Media;
 using Point = System.Windows.Point;
 using System.IO;
+using System.Windows.Threading;
 
 namespace LiveCameraSample
 {
@@ -107,10 +108,15 @@ namespace LiveCameraSample
         private ScoringSystem scoringSystem = new ScoringSystem();
         private Dictionary<Guid, CroppedBitmap> playerImages = new Dictionary<Guid, CroppedBitmap>();
 
+        private DispatcherTimer timer;
+        private DateTime roundStart;
+        private string timerText = "";
+
         public MainWindow()
         {
             currentGroupId = currentGroupName;
             InitializeComponent();
+            StartTimer();
 
             // Create grabber. 
             _grabber = new FrameGrabber<LiveCameraResult>();
@@ -682,6 +688,24 @@ namespace LiveCameraSample
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             StartButton();
+        }
+
+        private void StartTimer()
+        {
+            timer = new DispatcherTimer(
+               new TimeSpan(0, 0, 0, 0, 50),
+               DispatcherPriority.Background,
+               t_Tick,
+               Dispatcher.CurrentDispatcher);
+
+            timer.IsEnabled = true;
+
+        }
+
+        private void t_Tick(object sender, EventArgs e)
+        {
+            TimeSpan timeSpan = DateTime.Now - roundStart;
+            timerText = timeSpan.ToString(@"mm\:ss");
         }
     }
 }
