@@ -304,8 +304,7 @@ namespace LiveCameraSample
             return DrawOverlay(baseImage, drawAction);
         }
 
-
-        public static BitmapSource DrawFaces(BitmapSource baseImage, Dictionary<Guid, Microsoft.ProjectOxford.Face.Contract.Face> identities, ScoringSystem scoring)
+        public static BitmapSource DrawFaces(BitmapSource baseImage, Dictionary<Guid, Microsoft.ProjectOxford.Face.Contract.Face> identities, ScoringSystem scoring, MainWindow.AppMode mode)
         {
             if (identities == null)
             {
@@ -325,12 +324,12 @@ namespace LiveCameraSample
                         face.FaceRectangle.Width, face.FaceRectangle.Height);
                     string text = "";
                    
-                    if (face.FaceAttributes != null)
+                    if (face.FaceAttributes != null && mode == MainWindow.AppMode.Faces)
                     {
-                        // text += Aggregation.SummarizeFaceAttributes(face.FaceAttributes);
+                        text += Aggregation.SummarizeFaceAttributes(face.FaceAttributes);
                     }
 
-                    if (face.FaceAttributes.Emotion != null)
+                    if (face.FaceAttributes.Emotion != null && mode == MainWindow.AppMode.Emotions)
                     {
                         text += Aggregation.SummarizeEmotion(face.FaceAttributes.Emotion);
                     }
