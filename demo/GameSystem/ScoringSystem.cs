@@ -53,5 +53,26 @@ namespace GameSystem
             }
             CurrentRoundScore = new Dictionary<Guid, int>();
         }
+
+        public Dictionary<Guid,int> GameWinner()
+        {
+            int maxScore = int.MinValue;
+            Dictionary<Guid, int> winners = new Dictionary<Guid, int>();
+            foreach (var playerScore in TotalScore)
+            {
+                if(playerScore.Value > maxScore)
+                {
+                    maxScore = playerScore.Value;
+                    winners = new Dictionary<Guid, int>();
+                    winners.Add(playerScore.Key, playerScore.Value);
+                }
+                else if(playerScore.Value == maxScore)
+                {
+                    winners.Add(playerScore.Key, playerScore.Value);
+                }
+            }
+
+            return winners;
+        }
     }
 }
