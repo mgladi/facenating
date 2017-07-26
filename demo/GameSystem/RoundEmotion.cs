@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using GameSystem;
 using Microsoft.ProjectOxford.Common.Contract;
+using System.Windows.Media.Imaging;
 
 namespace LiveCameraSample
 {
@@ -100,6 +99,38 @@ namespace LiveCameraSample
                 }
             }
             return maxPair;
+        }
+
+        public BitmapImage GetRoundTemplateImage()
+        {
+
+            switch (this.targetEmotion)
+            {
+                case EmotionType.Anger:
+                    return ImageProvider.HappyRound;
+                case EmotionType.Contempt:
+                    return ImageProvider.HappyRound;
+                case EmotionType.Disgust:
+                    return ImageProvider.HappyRound;
+                case EmotionType.Fear:
+                    return ImageProvider.HappyRound;
+                case EmotionType.Happiness:
+                    return ImageProvider.HappyRound;
+                case EmotionType.Neutral:
+                    return ImageProvider.HappyRound;
+                case EmotionType.Sadness:
+                    return ImageProvider.HappyRound;
+                case EmotionType.Surprise:
+                    return ImageProvider.HappyRound;
+                default:
+                    break;
+            }
+            return null;
+        }
+
+        public string GetRoundImageText()
+        {
+            return this.targetScore.ToString();
         }
     }
 }
