@@ -63,6 +63,7 @@ namespace LiveCameraSample
     public enum GameState
     {
         Participants,
+        Explain,
         RoundBegin,
         Game,
         RoundEnd,
@@ -85,7 +86,6 @@ namespace LiveCameraSample
         private bool _fuseClientRemoteResults;
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
-        private DateTime _startTime;
         private const int NumOfRounds =4;
         private IRound round = null;
         private int roundNumber = 0;
@@ -93,11 +93,10 @@ namespace LiveCameraSample
         public enum AppMode
         {
             Participants,
+
             Faces,
             Emotions,
             EmotionsWithClientFaceDetect,
-            Tags,
-            Celebrities
         }
 
         private string currentGroupName = Guid.NewGuid().ToString();
@@ -149,15 +148,19 @@ namespace LiveCameraSample
                     {
                         RightImage.Source = VisualizeResult(e.Frame);
                     }
-                    //if (gameState == GameState.Game)
-                   // {
-                      //  RightImage.Source = VisualizeTimer();
-                    //}
+                    if (gameState == GameState.Game)
+                    {
+                          RightImage.Source = VisualizeTimer();
+                   }
                 }));
 
                 if (DateTime.Now - currentTimeTaskStart > currentTimerTask)
                 {
-                    if (gameState == GameState.RoundBegin)
+                    if (gameState == GameState.Explain)
+                    {
+                        nextRound();
+                    }
+                    else if (gameState == GameState.RoundBegin)
                     {
                         currentTimerTask = TimeSpan.FromSeconds(15);
                         currentTimeTaskStart = DateTime.Now;
@@ -258,9 +261,7 @@ namespace LiveCameraSample
         }
 
         private VideoFrame lastFrame;
-        private System.Windows.Rect[] rects;
         private Face[] currentParticipants;
-        private MemoryStream otherJpg;
 
         /// <summary> Function which submits a frame to the Face API. </summary>
         /// <param name="frame"> The video frame to submit. </param>
@@ -294,7 +295,7 @@ namespace LiveCameraSample
         /// <param name="frame"> The video frame to submit. </param>
         /// <returns> A <see cref="Task{LiveCameraResult}"/> representing the asynchronous API call,
         ///     and containing the emotions returned by the API. </returns>
-        private async Task<LiveCameraResult> EmotionAnalysisFunction(VideoFrame frame)
+        private async Task<LiveCameraResult> AnalysisFunction(VideoFrame frame)
         {
             var jpg = frame.Image.ToMemoryStream(".jpg", s_jpegParams);
             var attrs = new List<FaceAttributeType> { FaceAttributeType.Age, FaceAttributeType.Emotion };
@@ -334,46 +335,6 @@ namespace LiveCameraSample
             return liveCameraResult;
         }
 
-        /// <summary> Function which submits a frame to the Computer Vision API for tagging. </summary>
-        /// <param name="frame"> The video frame to submit. </param>
-        /// <returns> A <see cref="Task{LiveCameraResult}"/> representing the asynchronous API call,
-        ///     and containing the tags returned by the API. </returns>
-        private async Task<LiveCameraResult> TaggingAnalysisFunction(VideoFrame frame)
-        {
-            // Encode image. 
-            var jpg = frame.Image.ToMemoryStream(".jpg", s_jpegParams);
-            // Submit image to API. 
-            var analysis = await _visionClient.GetTagsAsync(jpg);
-            // Count the API call. 
-            Properties.Settings.Default.VisionAPICallCount++;
-            // Output. 
-            return new LiveCameraResult { Tags = analysis.Tags };
-        }
-
-        /// <summary> Function which submits a frame to the Computer Vision API for celebrity
-        ///     detection. </summary>
-        /// <param name="frame"> The video frame to submit. </param>
-        /// <returns> A <see cref="Task{LiveCameraResult}"/> representing the asynchronous API call,
-        ///     and containing the celebrities returned by the API. </returns>
-        private async Task<LiveCameraResult> CelebrityAnalysisFunction(VideoFrame frame)
-        {
-            // Encode image. 
-            var jpg = frame.Image.ToMemoryStream(".jpg", s_jpegParams);
-            // Submit image to API. 
-            var result = await _visionClient.AnalyzeImageInDomainAsync(jpg, "celebrities");
-            // Count the API call. 
-            Properties.Settings.Default.VisionAPICallCount++;
-            // Output. 
-            var celebs = JsonConvert.DeserializeObject<CelebritiesResult>(result.Result.ToString()).Celebrities;
-            return new LiveCameraResult
-            {
-                // Extract face rectangles from results. 
-                Faces = celebs.Select(c => CreateFace(c.FaceRectangle)).ToArray(),
-                // Extract celebrity names from results. 
-                CelebrityNames = celebs.Select(c => c.Name).ToArray()
-            };
-        }
-
         private BitmapSource VisualizeResult(VideoFrame frame)
         {
             // Draw any results on top of the image. 
@@ -393,7 +354,11 @@ namespace LiveCameraSample
                     MatchAndReplaceFaceRectangles(result.Faces, clientFaces);
                 }
 
-                if (this.gameState == GameState.RoundBegin)
+                if (this.gameState == GameState.Explain)
+                {
+                    visImage = Visualization.DrawExplain(visImage);
+                }
+                else if (this.gameState == GameState.RoundBegin)
                 {
                     visImage = VisualizeStartRound(frame);
                 }
@@ -408,7 +373,7 @@ namespace LiveCameraSample
                     scoringSystem.AddToCurrentRound(scores);
                     visImage = Visualization.DrawSomething(visImage, round.GetRoundTarget(), new Point(0, 0));
 
-                    visImage = Visualization.DrawFaces(visImage, result.Identities, scoringSystem);
+                    visImage = Visualization.DrawFaces(visImage, result.Identities, scoringSystem, _mode);
                     visImage = Visualization.DrawTags(visImage, result.Tags);
 
                     SavePlayerImages(visImage, result);
@@ -457,7 +422,7 @@ namespace LiveCameraSample
             var bitmap = VisualizeRound(frame);
             var description = round.GetRoundDescription();
             
-            return Visualization.DrawRoundStart(bitmap, round);
+            return Visualization.DrawRoundStart(bitmap, round, roundNumber);
         }
 
         private BitmapSource VisualizeEndRound(VideoFrame frame)
@@ -471,8 +436,6 @@ namespace LiveCameraSample
         private BitmapSource VisualizeEndGame(VideoFrame frame)
         {
             var bitmap = VisualizeRound(frame);
-            string s = "";
-            int i = 1;
             Dictionary<Guid,int> winners = scoringSystem.GameWinner();
             return Visualization.DrawRoundEnd(bitmap, "End Game", "And the winner is:", winners, playerImages);
 
@@ -490,18 +453,6 @@ namespace LiveCameraSample
             return BitmapSource.Create(frame.Image.Width, frame.Image.Height, 0, 0, pf, null, rawImage, rawStride);
         }
 
-        /// <summary> Populate ModeList in the UI, once it is loaded. </summary>
-        /// <param name="sender"> Source of the event. </param>
-        /// <param name="e">      Routed event information. </param>
-        private void ModeList_Loaded(object sender, RoutedEventArgs e)
-        {
-            var modes = (AppMode[])Enum.GetValues(typeof(AppMode));
-
-            var comboBox = sender as ComboBox;
-            comboBox.ItemsSource = modes.Select(m => m.ToString());
-            comboBox.SelectedIndex = 0;
-        }
-
         private void updateMode(AppMode newMode)
         {
             this._mode = newMode;
@@ -511,22 +462,16 @@ namespace LiveCameraSample
                     _grabber.AnalysisFunction = ParticipantsAnalysisFunction;
                     break;
                 case AppMode.Faces:
-                    _grabber.AnalysisFunction = FacesAnalysisFunction;
+                    _grabber.AnalysisFunction = AnalysisFunction;
                     break;
                 case AppMode.Emotions:
-                    _grabber.AnalysisFunction = EmotionAnalysisFunction;
+                    _grabber.AnalysisFunction = AnalysisFunction;
                     break;
                 case AppMode.EmotionsWithClientFaceDetect:
                     // Same as Emotions, except we will display the most recent faces combined with
                     // the most recent API results. 
-                    _grabber.AnalysisFunction = EmotionAnalysisFunction;
+                    _grabber.AnalysisFunction = AnalysisFunction;
                     _fuseClientRemoteResults = true;
-                    break;
-                case AppMode.Tags:
-                    _grabber.AnalysisFunction = TaggingAnalysisFunction;
-                    break;
-                case AppMode.Celebrities:
-                    _grabber.AnalysisFunction = CelebrityAnalysisFunction;
                     break;
                 default:
                     _grabber.AnalysisFunction = null;
@@ -651,7 +596,9 @@ namespace LiveCameraSample
             var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
             byte[] streamBytes = ReadFully(otherJpg);
 
-            nextRound();
+            this.gameState = GameState.Explain;
+            this.currentTimerTask = TimeSpan.FromSeconds(15);
+            this.currentTimeTaskStart = DateTime.Now;
 
             //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
             await _faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
@@ -679,13 +626,27 @@ namespace LiveCameraSample
                 roundNumber++;
             }
 
-            round = new RoundEmotion();
-            updateMode(AppMode.Emotions);
+            round = getRandomRound();
             scoringSystem.CreateNewRound();
             playerImages = new Dictionary<Guid, CroppedBitmap>();
             this.gameState = GameState.RoundBegin;
             this.currentTimerTask = TimeSpan.FromSeconds(6);
             this.currentTimeTaskStart = DateTime.Now;
+        }
+
+        private IRound getRandomRound()
+        {
+            int rand = new Random().Next();
+            if (rand%4 == 0)
+            {
+                updateMode(AppMode.Faces);
+                return new RoundAge();
+            }
+            else
+            {
+                updateMode(AppMode.Emotions);
+                return new RoundEmotion();
+            }
         }
 
         public byte[] ReadFully(Stream input)
