@@ -165,6 +165,7 @@
     <Content Include="Data\haarcascade_frontalface_alt2.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Data\start_button.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GameSystem\GameSystem.csproj">
