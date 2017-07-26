@@ -192,7 +192,7 @@ namespace LiveCameraSample
 
             if (drawIndicator)
             {
-                drawingContext.DrawImage(round.GetRoundIndicator(), new Rect(570, 410, 70, 70));
+                drawingContext.DrawImage(round.GetRoundIndicator(), new Rect(560, 400, 80, 80));
 
                 FormattedText targetText = new FormattedText(round.GetRoundImageText(),
                     CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
@@ -386,6 +386,7 @@ namespace LiveCameraSample
 
 
                     //drawingContext.DrawImage(ImageProvider.Frame, faceRect);
+
                     if (text != "")
                     {
                         FormattedText ft = new FormattedText(text,
