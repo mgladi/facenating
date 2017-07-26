@@ -86,7 +86,7 @@ namespace LiveCameraSample
         private bool _fuseClientRemoteResults;
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
-        private const int NumOfRounds =4;
+        private const int NumOfRounds = 4;
         private IRound round = null;
         private int roundNumber = 0;
 
@@ -169,7 +169,7 @@ namespace LiveCameraSample
                         currentTimerTask = TimeSpan.FromSeconds(3);
                         currentTimeTaskStart = DateTime.Now;
                         gameState = GameState.RoundEnd;
-                        scoringSystem.CreateNewRound();
+                        scoringSystem.AddRoundToGameScore();
                     }
 
                     else if (gameState == GameState.RoundEnd)
@@ -420,7 +420,7 @@ namespace LiveCameraSample
             var bitmap = VisualizeRound(frame);
             string s = "Round Score:\n";
 
-            return Visualization.DrawRoundEnd(bitmap, "End round " + roundNumber, s, scoringSystem.TotalScore, playerImages);
+            return Visualization.DrawRoundEnd(bitmap, "End round " + roundNumber, s, scoringSystem.CurrentRoundScore, playerImages, scoringSystem.TotalScore);
 
         }
         private BitmapSource VisualizeEndGame(VideoFrame frame)
@@ -587,7 +587,7 @@ namespace LiveCameraSample
             byte[] streamBytes = ReadFully(otherJpg);
 
             this.gameState = GameState.Explain;
-            this.currentTimerTask = TimeSpan.FromSeconds(15);
+            this.currentTimerTask = TimeSpan.FromSeconds(1);
             this.currentTimeTaskStart = DateTime.Now;
 
             //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");

@@ -241,36 +241,45 @@ namespace LiveCameraSample
         }
 
 
-        public static BitmapSource DrawRoundEnd(BitmapSource baseImage, string title, string content, Dictionary<Guid, int> playerScore, Dictionary<Guid, CroppedBitmap> playerImages = null)
+        public static BitmapSource DrawRoundEnd(BitmapSource baseImage, string title, string content, Dictionary<Guid, int> playerRoundScore, Dictionary<Guid, CroppedBitmap> playerImages = null, Dictionary<Guid, int> playerFinalScore=null)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
                 FormattedText titleText = new FormattedText(title,
-                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 25, Brushes.Purple);
+                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 100, Brushes.Purple);
                 var titlePoint = new System.Windows.Point(20, 20);
 
                 FormattedText contentText = new FormattedText(content,
-                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 14, Brushes.Black);
+                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 50, Brushes.Black);
 
-                var contentPoint = new System.Windows.Point(20, 60);
+                var contentPoint = new System.Windows.Point(20, 150);
 
                 drawingContext.DrawText(titleText, titlePoint);
                 drawingContext.DrawText(contentText, contentPoint);
 
-                if (playerScore != null && playerImages != null)
+                if (playerRoundScore != null && playerImages != null)
                 {
                     int i = 0;
-                    foreach (var player in playerScore)
+                    foreach (var player in playerRoundScore)
                     {
                         if(playerImages.ContainsKey(player.Key))
                         {
-                            Rect rect = new Rect(20 + 60 * (i % 2), 90 + 30 * (i / 2), 30, 30);
+                            Rect rect = new Rect(20 + 300 * (i % 2), 230 + 140 * (i / 2), 80, 80);
                             drawingContext.DrawImage(playerImages[player.Key], rect);
                             FormattedText scoreText = new FormattedText(player.Value.ToString(),
-                                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 14, Brushes.Black);
+                                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 30, Brushes.Black);
 
-                            var scorePoint = new System.Windows.Point(52 + 60 * (i % 2), 95 + 30 * (i / 2));
+                            var scorePoint = new System.Windows.Point(20 + 300 * (i % 2), 300 + 140 * (i / 2));
                             drawingContext.DrawText(scoreText, scorePoint);
+
+                            if(playerFinalScore != null && playerFinalScore.ContainsKey(player.Key))
+                            {
+                                scoreText = new FormattedText("Total: " + playerFinalScore[player.Key].ToString(),
+                                    CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 30, Brushes.Red);
+
+                                scorePoint = new System.Windows.Point(120 + 300 * (i % 2), 300 + 140 * (i / 2));
+                                drawingContext.DrawText(scoreText, scorePoint);
+                            }
                             i++;
                         }
                     }
