@@ -88,7 +88,7 @@ namespace LiveCameraSample
         private bool _fuseClientRemoteResults;
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
-        private const int NumOfRounds = 1;
+        private const int NumOfRounds = 4;
         private IRound round = null;
         private int roundNumber = 0;
 
@@ -160,6 +160,8 @@ namespace LiveCameraSample
                     {
                         RightImage.Source = VisualizeResult(e.Frame);
                     }
+
+                    
                 }));
 
                 if (DateTime.Now - currentTimeTaskStart > currentTimerTask)
@@ -253,7 +255,12 @@ namespace LiveCameraSample
                         }
                         if (gameState == GameState.Game || gameState == GameState.RoundBegin)
                         {
-                            RightImage.Source = VisualizeTimer();
+                            bool drawIndicator = false;
+                            if (gameState == GameState.Game)
+                            {
+                                drawIndicator = true;
+                            }
+                            RightImage.Source = VisualizeTimer(drawIndicator);
                         }
                     }
                 }));
@@ -283,12 +290,15 @@ namespace LiveCameraSample
 
         private void T_Elapsed(object sender, ElapsedEventArgs e)
         {
+            if (images.Count > 0)
+            {
             int r = rnd.Next(images.Count);
             var image = images[r];
             this.Dispatcher.BeginInvoke((Action)(() =>
             {
                 LeftImage.Source = image;
             }));
+        }
         }
 
         /// <summary> Function which submits a frame to the Face API. </summary>
@@ -419,9 +429,9 @@ namespace LiveCameraSample
                     scoringSystem.AddToCurrentRound(scores);
                     visImage = Visualization.DrawSomething(visImage, round.GetRoundTarget(), new Point(0, 0));
 
-                    visImage = Visualization.DrawFaces(visImage, result.Identities, scoringSystem, _mode);
+                    visImage = Visualization.DrawFaces(visImage, round, result.Identities, scoringSystem, _mode);
 
-                    SavePlayerImages(visImage, frame.Image.ToBitmapSource(), result);
+                    SavePlayerImages(frame.Image.ToBitmapSource(), result);
                 }
                 else if (this.gameState == GameState.Participants)
                 {
@@ -437,15 +447,15 @@ namespace LiveCameraSample
         }
 
 
-        private ImageSource VisualizeTimer()
+        private ImageSource VisualizeTimer(bool drawIndicator)
         {
             // Draw any results on top of the image. 
 
-            return Visualization.DrawTime(timerText);
+            return Visualization.DrawTime(timerText, drawIndicator, round);
 
         }
 
-        private void SavePlayerImages(BitmapSource image, BitmapSource imageFromFrame, LiveCameraResult result)
+        private void SavePlayerImages(BitmapSource image, LiveCameraResult result)
         {
             if (result == null || result.Identities == null || this.gameState != GameState.Game)
             {
@@ -454,13 +464,14 @@ namespace LiveCameraSample
 
             if (DateTime.Now.AddSeconds(-playerImagesTimeOffsetSec) > this.lastPlayerImagesTime)
             {
-                this.groupImages.Add(imageFromFrame);
+                this.groupImages.Add(image);
+                SaveImageToFile(image);
 
                 foreach (var player in result.Identities)
                 {
                     int offset = 0;
                     Int32Rect faceRectangle = new Int32Rect(player.Value.FaceRectangle.Left + offset, player.Value.FaceRectangle.Top + offset, player.Value.FaceRectangle.Width + offset, player.Value.FaceRectangle.Height + offset);
-                    CroppedBitmap playerImage = new CroppedBitmap(imageFromFrame, faceRectangle);
+                    CroppedBitmap playerImage = new CroppedBitmap(image, faceRectangle);
 
                     if (playerImages.ContainsKey(player.Key))
                     {                      
@@ -473,6 +484,24 @@ namespace LiveCameraSample
 
                     lastPlayerImagesTime = DateTime.Now;
                 }
+            }       
+        }
+
+        private void SaveImageToFile(BitmapSource image)
+        {
+            if (!Directory.Exists("images"))
+            {
+                System.IO.Directory.CreateDirectory("images");
+            }
+
+
+            var date = DateTime.Now;
+            string filePath = @"images\" + date.ToShortDateString() + "_" + date.ToFileTime() + ".png";
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                BitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(image));
+                encoder.Save(fileStream);
             }       
         }
 
@@ -490,7 +519,7 @@ namespace LiveCameraSample
             var bitmap = VisualizeRound(frame);
             string s = "Round Score:\n";
 
-            return Visualization.DrawRoundEnd(bitmap, "End round " + roundNumber, s, scoringSystem.CurrentRoundScore, playerImages, scoringSystem.TotalScore);
+            return Visualization.DrawRoundEnd(bitmap, scoringSystem.CurrentRoundScore, playerImages, scoringSystem.TotalScore);
 
         }
         private BitmapSource VisualizeEndGame(VideoFrame frame)

@@ -172,10 +172,10 @@ namespace LiveCameraSample
         }
 
         private static ImageSource lastBitmap;
-        public static ImageSource DrawTime(string showTime)
+        public static ImageSource DrawTime(string showTime, bool drawIndicator, IRound round)
         {
 
-            if (lastBitmap== null)
+            if (lastBitmap == null)
             {
                 return lastBitmap;
             }
@@ -190,6 +190,16 @@ namespace LiveCameraSample
 
             drawingContext.DrawText(ft, new Point(550, 0));
 
+            if (drawIndicator)
+            {
+                drawingContext.DrawImage(round.GetRoundIndicator(), new Rect(560, 400, 80, 80));
+
+                FormattedText targetText = new FormattedText(round.GetRoundImageText(),
+                    CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
+                    20, Brushes.White);
+
+                drawingContext.DrawText(targetText, new Point(600, 440));
+            }
             drawingContext.Close();
 
             RenderTargetBitmap outputBitmap = new RenderTargetBitmap(
@@ -200,6 +210,7 @@ namespace LiveCameraSample
 
             return outputBitmap;
         }
+
 
         public static BitmapSource DrawRoundStart(BitmapSource baseImage, IRound round, int roundNum)
         {
@@ -229,7 +240,7 @@ namespace LiveCameraSample
         }
 
 
-        public static BitmapSource DrawRoundEnd(BitmapSource baseImage, string title, string content, 
+        public static BitmapSource DrawRoundEnd(BitmapSource baseImage,
             Dictionary<Guid, int> playerRoundScore, 
             Dictionary<Guid, List<CroppedBitmap>> playerImages = null, 
             Dictionary<Guid, int> playerFinalScore = null, 
@@ -237,17 +248,9 @@ namespace LiveCameraSample
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
-                FormattedText titleText = new FormattedText(title,
-                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 100, Brushes.Purple);
-                var titlePoint = new System.Windows.Point(20, 20);
-
-                FormattedText contentText = new FormattedText(content,
-                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 50, Brushes.Black);
-
-                var contentPoint = new System.Windows.Point(20, 150);
-
-                drawingContext.DrawText(titleText, titlePoint);
-                drawingContext.DrawText(contentText, contentPoint);
+                var image = ImageProvider.EndRound;
+                var faceRect = new Rect(0, 0, baseImage.Width, baseImage.Height);
+                drawingContext.DrawImage(image, faceRect);
 
                 if (playerRoundScore != null && playerImages != null)
                 {
@@ -322,7 +325,7 @@ namespace LiveCameraSample
 
         }
 
-        public static BitmapSource DrawFaces(BitmapSource baseImage, Dictionary<Guid, Microsoft.ProjectOxford.Face.Contract.Face> identities, ScoringSystem scoring, MainWindow.AppMode mode)
+        public static BitmapSource DrawFaces(BitmapSource baseImage, IRound round, Dictionary<Guid, Microsoft.ProjectOxford.Face.Contract.Face> identities, ScoringSystem scoring, MainWindow.AppMode mode)
         {
             if (identities == null)
             {
@@ -375,6 +378,7 @@ namespace LiveCameraSample
 
 
                     //drawingContext.DrawImage(ImageProvider.Frame, faceRect);
+
                     if (text != "")
                     {
                         FormattedText ft = new FormattedText(text,
@@ -394,6 +398,8 @@ namespace LiveCameraSample
                         drawingContext.DrawRectangle(brush, null, rect);
                         drawingContext.DrawText(ft, origin);
                     }
+
+                    drawingContext.DrawImage(round.GetRoundIndicator(), new Rect(570, 410, 70, 70));
                 }
             };
 
