@@ -55,6 +55,7 @@ using System.Threading;
 using System.Windows.Media;
 using Point = System.Windows.Point;
 using System.IO;
+using System.Windows.Threading;
 
 namespace LiveCameraSample
 {
@@ -64,7 +65,8 @@ namespace LiveCameraSample
         Participants,
         RoundBegin,
         Game,
-        RoundEnd
+        RoundEnd,
+        GameEnd
     }
 
     /// <summary>
@@ -106,10 +108,15 @@ namespace LiveCameraSample
         private ScoringSystem scoringSystem = new ScoringSystem();
         private Dictionary<Guid, CroppedBitmap> playerImages = new Dictionary<Guid, CroppedBitmap>();
 
+        private DispatcherTimer timer;
+        private DateTime roundStart;
+        private string timerText = "";
+
         public MainWindow()
         {
             currentGroupId = currentGroupName;
             InitializeComponent();
+            StartTimer();
 
             // Create grabber. 
             _grabber = new FrameGrabber<LiveCameraResult>();
@@ -119,6 +126,7 @@ namespace LiveCameraSample
             // Set up a listener for when the client receives a new frame.
             _grabber.NewFrameProvided += (s, e) =>
             {
+                
                 if (_mode == AppMode.EmotionsWithClientFaceDetect)
                 {
                     // Local face detection. 
@@ -141,6 +149,7 @@ namespace LiveCameraSample
                     {
                         RightImage.Source = VisualizeResult(e.Frame);
                     }
+                    RightImage.Source = VisualizeTimer();
                 }));
 
                 if (DateTime.Now - currentTimeTaskStart > currentTimerTask)
@@ -153,17 +162,19 @@ namespace LiveCameraSample
 
                     }
                     else if (gameState == GameState.Game)
-                        {
-                        currentTimerTask = TimeSpan.FromSeconds(6);
+                    {
+                        currentTimerTask = TimeSpan.FromSeconds(3);
                         currentTimeTaskStart = DateTime.Now;
                         gameState = GameState.RoundEnd;
                         scoringSystem.CreateNewRound();
-                        }
+                    }
 
                     else if (gameState == GameState.RoundEnd)
                     {
                         if (roundNumber == NumOfRounds)
                         {
+                            currentTimerTask = TimeSpan.FromSeconds(3);
+                            gameState = GameState.GameEnd;
                             _grabber.StopProcessingAsync();
                         }
                         else
@@ -392,9 +403,22 @@ namespace LiveCameraSample
                 {
                     visImage = Visualization.DrawParticipants(visImage, result.Faces);
                 }
+                else if (this.gameState == GameState.GameEnd)
+                {
+                    visImage = VisualizeEndGame();
+                }
             }
 
             return visImage;
+        }
+
+
+        private ImageSource VisualizeTimer()
+        {
+            // Draw any results on top of the image. 
+
+            return Visualization.DrawTime();
+
         }
 
         private void SavePlayerImages(BitmapSource image, LiveCameraResult result)
@@ -431,6 +455,18 @@ namespace LiveCameraSample
                 s += i++ + ": " + item.Value + "\n";
             }
             return Visualization.DrawRound(bitmap, "End round " + roundNumber, "Get Ready...", playerImages);
+
+        }
+        private BitmapSource VisualizeEndGame()
+        {
+            var bitmap = VisualizeRound();
+            string s = "";
+            int i = 1;
+            foreach (var item in scoringSystem.TotalScore)
+            {
+                s += i++ + ": " + item.Value + "\n";
+            }
+            return Visualization.DrawRound(bitmap, "End Game", "And the winner is....", playerImages);
 
         }
         private BitmapSource VisualizeRound()
@@ -647,7 +683,7 @@ namespace LiveCameraSample
             scoringSystem.CreateNewRound();
             playerImages = new Dictionary<Guid, CroppedBitmap>();
             this.gameState = GameState.RoundBegin;
-            this.currentTimerTask = TimeSpan.FromSeconds(6);
+            this.currentTimerTask = TimeSpan.FromSeconds(3);
             this.currentTimeTaskStart = DateTime.Now;
         }
 
@@ -668,6 +704,24 @@ namespace LiveCameraSample
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             StartButton();
+        }
+
+        private void StartTimer()
+        {
+            timer = new DispatcherTimer(
+               new TimeSpan(0, 0, 0, 0, 50),
+               DispatcherPriority.Background,
+               t_Tick,
+               Dispatcher.CurrentDispatcher);
+
+            timer.IsEnabled = true;
+
+        }
+
+        private void t_Tick(object sender, EventArgs e)
+        {
+            TimeSpan timeSpan = DateTime.Now - roundStart;
+            timerText = timeSpan.ToString(@"mm\:ss");
         }
     }
 }
