@@ -76,6 +76,7 @@
     <Compile Include="ImageProvider.cs" />
     <Compile Include="IRound.cs" />
     <Compile Include="LiveCameraResult.cs" />
+    <Compile Include="RoundCatch.cs" />
     <Compile Include="RoundAge.cs" />
     <Compile Include="RoundEmotion.cs" />
     <Compile Include="ScoringSystem.cs" />
