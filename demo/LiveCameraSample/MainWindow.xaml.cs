@@ -86,7 +86,7 @@ namespace LiveCameraSample
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
         private DateTime _startTime;
-        private const int NumOfRounds = 4;
+        private const int NumOfRounds =4;
         private IRound round = null;
         private int roundNumber = 0;
 
@@ -301,15 +301,26 @@ namespace LiveCameraSample
             Face[] faces = await _faceClient.DetectAsync(jpg, returnFaceAttributes: attrs);
             Guid[] faceIds = faces.Select(face => face.FaceId).ToArray();
 
-            IdentifyResult[] identities = await _faceClient.IdentifyAsync(currentGroupId, faceIds);
-            var identityDict = identities.Where(i => i.Candidates.Length > 0).ToDictionary(i => i.Candidates[0].PersonId, i => faces.First(f => f.FaceId == i.FaceId));
-
-            return new LiveCameraResult
+            
+            var liveCameraResult = new LiveCameraResult
             {
-                Identities = identityDict,
                 Faces = faces,
                 EmotionScores = faces.Select(f => f.FaceAttributes.Emotion).ToArray()
             };
+
+            try
+            {
+                IdentifyResult[] identities = await _faceClient.IdentifyAsync(currentGroupId, faceIds);
+                var identityDict = identities.Where(i => i.Candidates.Length > 0).ToDictionary(i => i.Candidates[0].PersonId, i => faces.First(f => f.FaceId == i.FaceId));
+
+                liveCameraResult.Identities = identityDict;
+            }
+            catch (Exception e)
+            {
+
+            }
+
+            return liveCameraResult;
         }
 
         /// <summary> Function which submits a frame to the Computer Vision API for tagging. </summary>
@@ -415,6 +426,11 @@ namespace LiveCameraSample
 
         private void SavePlayerImages(BitmapSource image, LiveCameraResult result)
         {
+            if (result == null || result.Identities == null)
+            {
+                return;
+            }
+
             foreach (var player in result.Identities)
             {
                 Int32Rect faceRectangle = new Int32Rect(player.Value.FaceRectangle.Left, player.Value.FaceRectangle.Top, player.Value.FaceRectangle.Width, player.Value.FaceRectangle.Height);
@@ -428,20 +444,17 @@ namespace LiveCameraSample
         {
             var bitmap = VisualizeRound();
             var description = round.GetRoundDescription();
-            return Visualization.DrawRound(bitmap, "Start round " + roundNumber, description);
+            
+            return Visualization.DrawRoundStart(bitmap, round);
 
         }
 
         private BitmapSource VisualizeEndRound()
         {
             var bitmap = VisualizeRound();
-            string s = "";
-            int i = 1;
-            foreach (var item in scoringSystem.TotalScore)
-            {
-                s += i++ + ": " + item.Value + "\n";
-            }
-            return Visualization.DrawRound(bitmap, "End round " + roundNumber, "Get Ready...", playerImages);
+            string s = "Round Score:\n";
+
+            return Visualization.DrawRoundEnd(bitmap, "End round " + roundNumber, s, scoringSystem.TotalScore, playerImages);
 
         }
         private BitmapSource VisualizeEndGame()
@@ -449,11 +462,8 @@ namespace LiveCameraSample
             var bitmap = VisualizeRound();
             string s = "";
             int i = 1;
-            foreach (var item in scoringSystem.TotalScore)
-            {
-                s += i++ + ": " + item.Value + "\n";
-            }
-            return Visualization.DrawRound(bitmap, "End Game", "And the winner is....", playerImages);
+            Dictionary<Guid,int> winners = scoringSystem.GameWinner();
+            return Visualization.DrawRound(bitmap, "End Game", "And the winner is:", winners, playerImages);
 
         }
         private BitmapSource VisualizeRound()
@@ -670,7 +680,7 @@ namespace LiveCameraSample
             scoringSystem.CreateNewRound();
             playerImages = new Dictionary<Guid, CroppedBitmap>();
             this.gameState = GameState.RoundBegin;
-            this.currentTimerTask = TimeSpan.FromSeconds(3);
+            this.currentTimerTask = TimeSpan.FromSeconds(6);
             this.currentTimeTaskStart = DateTime.Now;
         }
 
