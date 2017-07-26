@@ -86,7 +86,7 @@ namespace LiveCameraSample
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
         private DateTime _startTime;
-        private const int NumOfRounds = 1;
+        private const int NumOfRounds =4;
         private IRound round = null;
         private int roundNumber = 0;
 
