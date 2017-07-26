@@ -49,7 +49,7 @@ namespace LiveCameraSample
         public static string SummarizeEmotion(Microsoft.ProjectOxford.Common.Contract.EmotionScores scores)
         {
             var bestEmotion = Aggregation.GetDominantEmotion(scores);
-            return string.Format("{0}: {1:N1}", bestEmotion.Item1, bestEmotion.Item2);
+            return string.Format("{0}: {1}%", bestEmotion.Item1, (int)(bestEmotion.Item2*100));
         }
 
         public static string SummarizeFaceAttributes(FaceAttributes attr)

@@ -126,7 +126,7 @@ namespace LiveCameraSample
 
         public string GetRoundImageText()
         {
-            return this.targetScore.ToString();
+            return (int)(this.targetScore*100) + "%";
         }
 
         public BitmapImage GetRoundIndicator()
