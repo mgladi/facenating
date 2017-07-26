@@ -79,5 +79,14 @@ namespace LiveCameraSample
                 return new BitmapImage(new Uri(fullPath));
             }
         }
+
+        public static BitmapImage CatchRound
+        {
+            get
+            {
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                return new BitmapImage(new Uri(fullPath));
+            }
+        }
     }
 }

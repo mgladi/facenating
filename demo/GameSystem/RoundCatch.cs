@@ -34,12 +34,12 @@ namespace LiveCameraSample
         public BitmapImage GetRoundTemplateImage()
         {
             // insert leader image here
-            throw new NotImplementedException();
+            return ImageProvider.CatchRound;
         }
 
         public string GetRoundImageText()
         {
-            throw new NotImplementedException();
+            return "";
         }
 
         public Dictionary<Guid, int> ComputeFrameScorePerPlayer(LiveCameraResult apiResult)
