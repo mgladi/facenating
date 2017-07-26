@@ -727,17 +727,29 @@ namespace LiveCameraSample
 
         private IRound getRandomRound()
         {
-            int rand = new Random().Next();
-            if (rand%4 == 0)
+            if (roundNumber == 1)
+            {
+                updateMode(AppMode.Emotions);
+                return new RoundEmotion(EmotionType.Surprise, 0.9);
+            }
+            if (roundNumber == 2)
             {
                 updateMode(AppMode.Faces);
                 return new RoundAge();
             }
-            else
+
+            EmotionType[] ProbabilityTable =
             {
-                updateMode(AppMode.Emotions);
-                return new RoundEmotion();
-            }
+                EmotionType.Anger, EmotionType.Anger, EmotionType.Anger,
+                EmotionType.Fear, EmotionType.Fear, EmotionType.Fear,
+                EmotionType.Sadness, EmotionType.Sadness,
+                EmotionType.Disgust,
+                EmotionType.Happiness,
+            };
+
+            int rand = new Random().Next(10);
+            updateMode(AppMode.Emotions);
+            return new RoundEmotion(ProbabilityTable[rand]);
         }
 
         public byte[] ReadFully(Stream input)
