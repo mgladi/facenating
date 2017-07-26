@@ -149,10 +149,10 @@ namespace LiveCameraSample
                     {
                         RightImage.Source = VisualizeResult(e.Frame);
                     }
-                    //if (gameState == GameState.Game)
-                   // {
-                      //  RightImage.Source = VisualizeTimer();
-                    //}
+                    if (gameState == GameState.Game)
+                    {
+                          RightImage.Source = VisualizeTimer();
+                   }
                 }));
 
                 if (DateTime.Now - currentTimeTaskStart > currentTimerTask)
