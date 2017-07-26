@@ -148,7 +148,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                string fullPath = Path.GetFullPath("Data/round_age.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
