@@ -43,7 +43,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/round_neutral.png.png");
+                string fullPath = Path.GetFullPath("Data/round_neutral.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
