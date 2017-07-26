@@ -146,10 +146,6 @@ namespace LiveCameraSample
                     {
                         RightImage.Source = VisualizeResult(e.Frame);
                     }
-                    if (gameState == GameState.Game)
-                    {
-                          RightImage.Source = VisualizeTimer();
-                   }
                 }));
 
                 if (DateTime.Now - currentTimeTaskStart > currentTimerTask)
@@ -180,6 +176,7 @@ namespace LiveCameraSample
                         else
                         {
                             nextRound();
+                            roundStart = DateTime.Now;
                         }
                     }
                 }
@@ -226,6 +223,10 @@ namespace LiveCameraSample
                         if (!_fuseClientRemoteResults)
                         {
                             RightImage.Source = VisualizeResult(e.Frame);
+                        }
+                        if (gameState == GameState.Game || gameState == GameState.RoundBegin)
+                        {
+                            RightImage.Source = VisualizeTimer();
                         }
                     }
                 }));
@@ -576,6 +577,7 @@ namespace LiveCameraSample
             byte[] streamBytes = ReadFully(otherJpg);
 
             nextRound();
+            roundStart = DateTime.Now;
 
             //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
             await _faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);

@@ -180,7 +180,7 @@ namespace LiveCameraSample
 
             drawingContext.DrawImage(lastBitmap, new Rect(0, 0, lastBitmap.Width, lastBitmap.Height));
 
-            drawingContext.DrawText(ft, new Point(0, 0));
+            drawingContext.DrawText(ft, new Point(550, 0));
 
             drawingContext.Close();
 
