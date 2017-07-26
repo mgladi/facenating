@@ -709,7 +709,7 @@ namespace LiveCameraSample
 
         private void t_Tick(object sender, EventArgs e)
         {
-            TimeSpan timeSpan = DateTime.Now - roundStart;
+            TimeSpan timeSpan = currentTimerTask - (DateTime.Now - roundStart);
             timerText = timeSpan.ToString(@"mm\:ss");
         }
     }
