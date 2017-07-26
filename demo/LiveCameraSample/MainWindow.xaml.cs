@@ -112,7 +112,7 @@ namespace LiveCameraSample
 
         private Dictionary<Guid, List<CroppedBitmap>> playerImages = new Dictionary<Guid, List<CroppedBitmap>>();
         private DateTime lastPlayerImagesTime = DateTime.MinValue;
-        private int playerImagesTimeOffsetSec;
+        private int playerImagesTimeOffsetSec = 2;
 
         public MainWindow()
         {
@@ -417,14 +417,15 @@ namespace LiveCameraSample
                     CroppedBitmap playerImage = new CroppedBitmap(image, faceRectangle);
 
                     if (playerImages.ContainsKey(player.Key))
-                    {
-                        playerImages[player.Key] = new List<CroppedBitmap>() { playerImage };
+                    {                      
+                        playerImages[player.Key].Add(playerImage);
                     }
                     else
                     {
-                        playerImages[player.Key].Add(playerImage);
+                        playerImages[player.Key] = new List<CroppedBitmap>() { playerImage };
                     }
-                    
+
+                    lastPlayerImagesTime = DateTime.Now;
                 }
             }       
         }
@@ -604,6 +605,7 @@ namespace LiveCameraSample
 
         private async void button_Click(object sender, RoutedEventArgs e)
         {
+            Face[] participants = this.currentParticipants;
             button.Visibility = Visibility.Hidden;
 
             var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
@@ -616,13 +618,13 @@ namespace LiveCameraSample
             //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
             await _faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
 
-            if (currentParticipants.Length > 1)
+            if (participants.Length > 1)
             {
-                for (int i = 0; i < currentParticipants.Length; i++)
+                for (int i = 0; i < participants.Length; i++)
                 {
                     CreatePersonResult person = await _faceClient.CreatePersonAsync(currentGroupId, i.ToString());
                     MemoryStream s = new MemoryStream(streamBytes);
-                    var addedPersistedPerson = await _faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, s, "userData", currentParticipants[i].FaceRectangle);
+                    var addedPersistedPerson = await _faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, s, "userData", participants[i].FaceRectangle);
                 }
                 await _faceClient.TrainPersonGroupAsync(currentGroupId);
             }
