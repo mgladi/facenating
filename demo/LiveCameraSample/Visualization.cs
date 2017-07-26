@@ -241,7 +241,7 @@ namespace LiveCameraSample
         }
 
 
-        public static BitmapSource DrawRoundEnd(BitmapSource baseImage, string title, string content, Dictionary<Guid, int> playerScore, Dictionary<Guid, CroppedBitmap> playerImages = null)
+        public static BitmapSource DrawRoundEnd(BitmapSource baseImage, string title, string content, Dictionary<Guid, int> playerScore, Dictionary<Guid, List<CroppedBitmap>> playerImages = null)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
@@ -265,7 +265,7 @@ namespace LiveCameraSample
                         if(playerImages.ContainsKey(player.Key))
                         {
                             Rect rect = new Rect(20 + 60 * (i % 2), 90 + 30 * (i / 2), 30, 30);
-                            drawingContext.DrawImage(playerImages[player.Key], rect);
+                            drawingContext.DrawImage(playerImages[player.Key][0], rect); //TODO
                             FormattedText scoreText = new FormattedText(player.Value.ToString(),
                                 CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 14, Brushes.Black);
 
