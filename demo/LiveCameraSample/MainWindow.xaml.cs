@@ -119,6 +119,7 @@ namespace LiveCameraSample
             // Set up a listener for when the client receives a new frame.
             _grabber.NewFrameProvided += (s, e) =>
             {
+                
                 if (_mode == AppMode.EmotionsWithClientFaceDetect)
                 {
                     // Local face detection. 
@@ -141,6 +142,7 @@ namespace LiveCameraSample
                     {
                         RightImage.Source = VisualizeResult(e.Frame);
                     }
+                    RightImage.Source = VisualizeTimer();
                 }));
 
                 if (DateTime.Now - currentTimeTaskStart > currentTimerTask)
@@ -384,6 +386,15 @@ namespace LiveCameraSample
             }
 
             return visImage;
+        }
+
+
+        private ImageSource VisualizeTimer()
+        {
+            // Draw any results on top of the image. 
+
+            return Visualization.DrawTime();
+
         }
 
         private void SavePlayerImages(BitmapSource image, LiveCameraResult result)

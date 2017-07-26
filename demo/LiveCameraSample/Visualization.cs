@@ -76,6 +76,7 @@ namespace LiveCameraSample
 
             outputBitmap.Render(visual);
 
+            lastBitmap = outputBitmap;
             return outputBitmap;
         }
 
@@ -160,9 +161,42 @@ namespace LiveCameraSample
                     }
                 }
             };
-
+            
             return DrawOverlay(baseImage, drawAction);
         }
+
+        private static ImageSource lastBitmap;
+        public static ImageSource DrawTime()
+        {
+
+            if (lastBitmap== null)
+            {
+                return lastBitmap;
+            }
+            DrawingVisual visual = new DrawingVisual();
+            DrawingContext drawingContext = visual.RenderOpen();
+
+
+            string dt = DateTime.Now.ToString("M/d/yyyy hh:mm:ss");
+            FormattedText ft = new FormattedText(dt,
+                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
+                20, Brushes.Yellow);
+
+            drawingContext.DrawImage(lastBitmap, new Rect(0, 0, lastBitmap.Width, lastBitmap.Height));
+
+            drawingContext.DrawText(ft, new Point(0, 0));
+
+            drawingContext.Close();
+
+            RenderTargetBitmap outputBitmap = new RenderTargetBitmap(
+                (int)lastBitmap.Width, (int)lastBitmap.Height,
+                0, 0, PixelFormats.Pbgra32);
+
+            outputBitmap.Render(visual);
+
+            return outputBitmap;
+        }
+
 
         public static BitmapSource DrawTags(BitmapSource baseImage, Tag[] tags)
         {
