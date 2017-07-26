@@ -458,7 +458,7 @@ namespace LiveCameraSample
             var bitmap = VisualizeRound(frame);
             string s = "Round Score:\n";
 
-            return Visualization.DrawRoundEnd(bitmap, "End round " + roundNumber, s, scoringSystem.CurrentRoundScore, playerImages, scoringSystem.TotalScore);
+            return Visualization.DrawRoundEnd(bitmap, scoringSystem.CurrentRoundScore, playerImages, scoringSystem.TotalScore);
 
         }
         private BitmapSource VisualizeEndGame(VideoFrame frame)

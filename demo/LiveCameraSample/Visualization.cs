@@ -240,7 +240,7 @@ namespace LiveCameraSample
         }
 
 
-        public static BitmapSource DrawRoundEnd(BitmapSource baseImage, string title, string content, 
+        public static BitmapSource DrawRoundEnd(BitmapSource baseImage,
             Dictionary<Guid, int> playerRoundScore, 
             Dictionary<Guid, List<CroppedBitmap>> playerImages = null, 
             Dictionary<Guid, int> playerFinalScore = null, 
@@ -248,17 +248,9 @@ namespace LiveCameraSample
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
-                FormattedText titleText = new FormattedText(title,
-                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 100, Brushes.Purple);
-                var titlePoint = new System.Windows.Point(20, 20);
-
-                FormattedText contentText = new FormattedText(content,
-                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 50, Brushes.Black);
-
-                var contentPoint = new System.Windows.Point(20, 150);
-
-                drawingContext.DrawText(titleText, titlePoint);
-                drawingContext.DrawText(contentText, contentPoint);
+                var image = ImageProvider.EndRound;
+                var faceRect = new Rect(0, 0, baseImage.Width, baseImage.Height);
+                drawingContext.DrawImage(image, faceRect);
 
                 if (playerRoundScore != null && playerImages != null)
                 {
