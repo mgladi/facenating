@@ -96,12 +96,34 @@ namespace LiveCameraSample
             }
         }
 
+        public static MediaPlayer Loser
+        {
+            get
+            {
+                MediaPlayer sound = new MediaPlayer();
+                string fullPath = Path.GetFullPath("Vocals/Loser.mp3");
+                sound.Open(new Uri(fullPath));
+                return sound;
+            }
+        }
+
         public static MediaPlayer KillHim
         {
             get
             {
                 MediaPlayer sound = new MediaPlayer();
                 string fullPath = Path.GetFullPath("Vocals/KillHim.mp3");
+                sound.Open(new Uri(fullPath));
+                return sound;
+            }
+        }
+
+        public static MediaPlayer KillHer
+        {
+            get
+            {
+                MediaPlayer sound = new MediaPlayer();
+                string fullPath = Path.GetFullPath("Vocals/KillHer.mp3");
                 sound.Open(new Uri(fullPath));
                 return sound;
             }
