@@ -148,8 +148,27 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                string fullPath = Path.GetFullPath("Data/round_age.png");
                 return new BitmapImage(new Uri(fullPath));
+            }
+        }
+
+        public static BitmapImage Instructions
+        {
+            get
+            {
+                string fullPath = Path.GetFullPath("Data/insructions.png");
+                return new BitmapImage(new Uri(fullPath));
+            }
+        }
+
+        public static BitmapImage AgeIndicator
+        {
+            get
+            {
+                string fullPath = Path.GetFullPath("Data/old_indicator.png");
+                return new BitmapImage(new Uri(fullPath));
+
             }
         }
 

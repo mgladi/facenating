@@ -192,7 +192,7 @@ namespace LiveCameraSample
 
             if (drawIndicator)
             {
-                drawingContext.DrawImage(round.GetRoundIndicator(), new Rect(570, 410, 70, 70));
+                drawingContext.DrawImage(round.GetRoundIndicator(), new Rect(560, 400, 80, 80));
 
                 FormattedText targetText = new FormattedText(round.GetRoundImageText(),
                     CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
@@ -326,13 +326,15 @@ namespace LiveCameraSample
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
-
+                /*
                 FormattedText ft = new FormattedText("Explanation text",
                     CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
                     16 * annotationScale, Brushes.Black);
 
                 var origin = new System.Windows.Point(100, 100);
                 drawingContext.DrawText(ft, origin);
+    */            
+                    drawingContext.DrawImage(ImageProvider.Instructions, new Rect(0, 0, 640, 480));
             };
 
             return DrawOverlay(baseImage, drawAction, false);
@@ -392,6 +394,7 @@ namespace LiveCameraSample
 
 
                     //drawingContext.DrawImage(ImageProvider.Frame, faceRect);
+
                     if (text != "")
                     {
                         FormattedText ft = new FormattedText(text,

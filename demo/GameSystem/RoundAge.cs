@@ -81,7 +81,7 @@ namespace LiveCameraSample
 
         public BitmapImage GetRoundIndicator()
         {
-            return ImageProvider.HappyIndicator;
+            return ImageProvider.AgeIndicator;
         }
     }
 }

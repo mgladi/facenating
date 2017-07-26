@@ -95,7 +95,6 @@ namespace LiveCameraSample
         public enum AppMode
         {
             Participants,
-
             Faces,
             Emotions,
             EmotionsWithClientFaceDetect,
@@ -126,6 +125,10 @@ namespace LiveCameraSample
             StartTimer();
             this.backgroundMusic = SoundProvider.Ukulele;
             this.backgroundMusic.Volume = 0.05;
+            this.backgroundMusic.MediaEnded += new EventHandler((object sender, EventArgs e) => {
+                this.backgroundMusic.Position = TimeSpan.Zero;
+                this.backgroundMusic.Play();
+            });
             this.backgroundMusic.Play();
             t.Elapsed += T_Elapsed;
 
@@ -292,13 +295,13 @@ namespace LiveCameraSample
         {
             if (images.Count > 0)
             {
-                int r = rnd.Next(images.Count);
-                var image = images[r];
-                this.Dispatcher.BeginInvoke((Action)(() =>
-                {
-                    LeftImage.Source = image;
-                }));
-            }
+            int r = rnd.Next(images.Count);
+            var image = images[r];
+            this.Dispatcher.BeginInvoke((Action)(() =>
+            {
+                LeftImage.Source = image;
+            }));
+        }
         }
 
         /// <summary> Function which submits a frame to the Face API. </summary>
@@ -431,7 +434,7 @@ namespace LiveCameraSample
 
                     visImage = Visualization.DrawFaces(visImage, round, result.Identities, scoringSystem, _mode);
 
-                    SavePlayerImages(visImage, frame.Image.ToBitmapSource(), result);
+                    SavePlayerImages(frame.Image.ToBitmapSource(), result);
                 }
                 else if (this.gameState == GameState.Participants)
                 {
@@ -455,11 +458,7 @@ namespace LiveCameraSample
 
         }
 
-
-
-
-
-        private void SavePlayerImages(BitmapSource image, BitmapSource imageFromFrame, LiveCameraResult result)
+        private void SavePlayerImages(BitmapSource image, LiveCameraResult result)
         {
             if (result == null || result.Identities == null || this.gameState != GameState.Game)
             {
@@ -468,13 +467,14 @@ namespace LiveCameraSample
 
             if (DateTime.Now.AddSeconds(-playerImagesTimeOffsetSec) > this.lastPlayerImagesTime)
             {
-                this.groupImages.Add(imageFromFrame);
+                this.groupImages.Add(image);
+                SaveImageToFile(image);
 
                 foreach (var player in result.Identities)
                 {
                     int offset = 0;
                     Int32Rect faceRectangle = new Int32Rect(player.Value.FaceRectangle.Left + offset, player.Value.FaceRectangle.Top + offset, player.Value.FaceRectangle.Width + offset, player.Value.FaceRectangle.Height + offset);
-                    CroppedBitmap playerImage = new CroppedBitmap(imageFromFrame, faceRectangle);
+                    CroppedBitmap playerImage = new CroppedBitmap(image, faceRectangle);
 
                     if (playerImages.ContainsKey(player.Key))
                     {                      
@@ -487,6 +487,24 @@ namespace LiveCameraSample
 
                     lastPlayerImagesTime = DateTime.Now;
                 }
+            }       
+        }
+
+        private void SaveImageToFile(BitmapSource image)
+        {
+            if (!Directory.Exists("images"))
+            {
+                System.IO.Directory.CreateDirectory("images");
+            }
+
+
+            var date = DateTime.Now;
+            string filePath = @"images\" + date.ToFileTime() + ".png";
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                BitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(image));
+                encoder.Save(fileStream);
             }       
         }
 
@@ -709,17 +727,29 @@ namespace LiveCameraSample
 
         private IRound getRandomRound()
         {
-            int rand = new Random().Next();
-            if (rand%4 == 0)
+            if (roundNumber == 1)
+            {
+                updateMode(AppMode.Emotions);
+                return new RoundEmotion(EmotionType.Surprise, 0.9);
+            }
+            if (roundNumber == 2)
             {
                 updateMode(AppMode.Faces);
                 return new RoundAge();
             }
-            else
+
+            EmotionType[] ProbabilityTable =
             {
-                updateMode(AppMode.Emotions);
-                return new RoundEmotion();
-            }
+                EmotionType.Anger, EmotionType.Anger, EmotionType.Anger,
+                EmotionType.Fear, EmotionType.Fear, EmotionType.Fear,
+                EmotionType.Sadness, EmotionType.Sadness,
+                EmotionType.Disgust,
+                EmotionType.Happiness,
+            };
+
+            int rand = new Random().Next(10);
+            updateMode(AppMode.Emotions);
+            return new RoundEmotion(ProbabilityTable[rand]);
         }
 
         public byte[] ReadFully(Stream input)
