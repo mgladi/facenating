@@ -317,6 +317,23 @@ namespace LiveCameraSample
             return DrawOverlay(baseImage, drawAction);
         }
 
+        public static BitmapSource DrawExplain(BitmapSource baseImage)
+        {
+            Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
+            {
+
+                FormattedText ft = new FormattedText("Explanation text",
+                    CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
+                    16 * annotationScale, Brushes.Black);
+
+                var origin = new System.Windows.Point(100, 100);
+                drawingContext.DrawText(ft, origin);
+            };
+
+            return DrawOverlay(baseImage, drawAction, false);
+
+        }
+
         public static BitmapSource DrawFaces(BitmapSource baseImage, Dictionary<Guid, Microsoft.ProjectOxford.Face.Contract.Face> identities, ScoringSystem scoring, MainWindow.AppMode mode)
         {
             if (identities == null)
