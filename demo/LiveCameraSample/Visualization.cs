@@ -62,7 +62,7 @@ namespace LiveCameraSample
 
         private static Typeface s_typeface = new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
         private static int latestBrushIndex = 0;
-        
+
         private static SolidColorBrush GetLatestBrush()
         {
             if (latestBrushIndex == 5)
@@ -241,7 +241,7 @@ namespace LiveCameraSample
 
 
         public static BitmapSource DrawRoundEnd(BitmapSource baseImage,
-            Dictionary<Guid, int> playerRoundScore, 
+            Dictionary<Guid, int> playerScore, 
             Dictionary<Guid, List<CroppedBitmap>> playerImages = null, 
             Dictionary<Guid, int> playerFinalScore = null, 
             List<BitmapSource> groupImages = null)
@@ -252,29 +252,43 @@ namespace LiveCameraSample
                 var faceRect = new Rect(0, 0, baseImage.Width, baseImage.Height);
                 drawingContext.DrawImage(image, faceRect);
 
+                var playerRoundScore = playerScore.ToList();
+
                 if (playerRoundScore != null && playerImages != null)
                 {
                     int i = 0;
-                    foreach (var player in playerRoundScore)
-                    {
-                        if(playerImages.ContainsKey(player.Key))
-                        {
-                            Rect rect = new Rect(20 + 300 * (i % 2), 230 + 140 * (i / 2), 80, 80);
-                            drawingContext.DrawImage(playerImages[player.Key][0], rect);
-                            FormattedText scoreText = new FormattedText(player.Value.ToString(),
-                                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 30, Brushes.Black);
+                    var enumerator = playerRoundScore.GetEnumerator();
 
-                            var scorePoint = new System.Windows.Point(20 + 300 * (i % 2), 300 + 140 * (i / 2));
+                    enumerator.MoveNext();
+                    var player = enumerator.Current;
+                    Rect rect = new Rect(20, 160, 150, 150);
+                    drawingContext.DrawImage(playerImages[player.Key][0], rect);
+                    FormattedText scoreText = new FormattedText(player.Value.ToString() + "Pts",
+                        CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 60, Brushes.White);
+
+                    var scorePoint = new System.Windows.Point(180, 250);
+                    drawingContext.DrawText(scoreText, scorePoint);
+                    while(enumerator.MoveNext())
+                    {
+                        player = enumerator.Current;
+                        if (playerImages.ContainsKey(player.Key))
+                        {
+                            rect = new Rect(20 + 180 * i, 320, 70, 70);
+                            drawingContext.DrawImage(playerImages[player.Key][0], rect);
+                            scoreText = new FormattedText(player.Value.ToString() + "Pts",
+                                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 30, Brushes.White);
+
+                            scorePoint = new System.Windows.Point(100 + 180 * i, 360);
                             drawingContext.DrawText(scoreText, scorePoint);
 
-                            if(playerFinalScore != null && playerFinalScore.ContainsKey(player.Key))
+                            /*if(playerFinalScore != null && playerFinalScore.ContainsKey(player.Key))
                             {
                                 scoreText = new FormattedText("Total: " + playerFinalScore[player.Key].ToString(),
                                     CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 30, Brushes.Red);
 
-                                scorePoint = new System.Windows.Point(120 + 300 * (i % 2), 300 + 140 * (i / 2));
+                                scorePoint = new System.Windows.Point(18 + 300 * (i % 2), 282 + 160 * (i / 2));
                                 drawingContext.DrawText(scoreText, scorePoint);
-                            }
+                            }*/
                             i++;
                         }
                     }
