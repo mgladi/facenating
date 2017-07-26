@@ -148,16 +148,13 @@ namespace LiveCameraSample
                     {
                         RightImage.Source = VisualizeResult(e.Frame);
                     }
-                    if (gameState == GameState.Game)
-                    {
-                          RightImage.Source = VisualizeTimer();
-                   }
                 }));
 
                 if (DateTime.Now - currentTimeTaskStart > currentTimerTask)
                 {
                     if (gameState == GameState.Explain)
                     {
+                        roundStart = DateTime.Now;
                         nextRound();
                     }
                     else if (gameState == GameState.RoundBegin)
@@ -186,6 +183,7 @@ namespace LiveCameraSample
                         else
                         {
                             nextRound();
+                            roundStart = DateTime.Now;
                         }
                     }
                 }
@@ -232,6 +230,10 @@ namespace LiveCameraSample
                         if (!_fuseClientRemoteResults)
                         {
                             RightImage.Source = VisualizeResult(e.Frame);
+                        }
+                        if (gameState == GameState.Game || gameState == GameState.RoundBegin)
+                        {
+                            RightImage.Source = VisualizeTimer();
                         }
                     }
                 }));
@@ -374,7 +376,6 @@ namespace LiveCameraSample
                     visImage = Visualization.DrawSomething(visImage, round.GetRoundTarget(), new Point(0, 0));
 
                     visImage = Visualization.DrawFaces(visImage, result.Identities, scoringSystem, _mode);
-                    visImage = Visualization.DrawTags(visImage, result.Tags);
 
                     SavePlayerImages(visImage, result);
                 }
