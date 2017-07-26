@@ -496,7 +496,7 @@ namespace LiveCameraSample
 
 
             var date = DateTime.Now;
-            string filePath = @"images\" + date.ToShortDateString() + "_" + date.ToFileTime() + ".png";
+            string filePath = @"images\" + date.ToFileTime() + ".png";
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
                 BitmapEncoder encoder = new PngBitmapEncoder();

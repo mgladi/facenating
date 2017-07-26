@@ -312,13 +312,15 @@ namespace LiveCameraSample
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
-
+                /*
                 FormattedText ft = new FormattedText("Explanation text",
                     CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
                     16 * annotationScale, Brushes.Black);
 
                 var origin = new System.Windows.Point(100, 100);
                 drawingContext.DrawText(ft, origin);
+    */            
+                    drawingContext.DrawImage(ImageProvider.Instructions, new Rect(0, 0, 640, 480));
             };
 
             return DrawOverlay(baseImage, drawAction, false);
