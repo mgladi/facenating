@@ -311,7 +311,18 @@ namespace LiveCameraSample
             try
             {
                 IdentifyResult[] identities = await _faceClient.IdentifyAsync(currentGroupId, faceIds);
-                var identityDict = identities.Where(i => i.Candidates.Length > 0).ToDictionary(i => i.Candidates[0].PersonId, i => faces.First(f => f.FaceId == i.FaceId));
+                var identityDict = new Dictionary<Guid, Face>();
+
+                foreach (var identity in identities)
+                {
+                    if (identity.Candidates.Length > 0 && identity.Candidates[0].Confidence > 0.6)
+                    {
+                        identityDict[identity.Candidates[0].PersonId] = faces.First(f => f.FaceId == identity.FaceId);
+
+                        
+                        identityDict[identity.Candidates[0].PersonId].FaceAttributes.Noise.Value = identity.Candidates[0].Confidence;
+                    }
+                }
 
                 liveCameraResult.Identities = identityDict;
             }
@@ -709,7 +720,7 @@ namespace LiveCameraSample
 
         private void t_Tick(object sender, EventArgs e)
         {
-            TimeSpan timeSpan = DateTime.Now - roundStart;
+            TimeSpan timeSpan = currentTimerTask - (DateTime.Now - roundStart);
             timerText = timeSpan.ToString(@"mm\:ss");
         }
     }
