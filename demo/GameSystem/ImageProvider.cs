@@ -170,5 +170,14 @@ namespace LiveCameraSample
                 return new BitmapImage(new Uri(fullPath));
             }
         }
+
+        public static BitmapImage EndRound
+        {
+            get
+            {
+                string fullPath = Path.GetFullPath("Data/round_over.png");
+                return new BitmapImage(new Uri(fullPath));
+            }
+        }
     }
 }
