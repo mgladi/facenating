@@ -85,7 +85,6 @@ namespace LiveCameraSample
         private bool _fuseClientRemoteResults;
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
-        private DateTime _startTime;
         private const int NumOfRounds =4;
         private IRound round = null;
         private int roundNumber = 0;
@@ -256,9 +255,7 @@ namespace LiveCameraSample
         }
 
         private VideoFrame lastFrame;
-        private System.Windows.Rect[] rects;
         private Face[] currentParticipants;
-        private MemoryStream otherJpg;
 
         /// <summary> Function which submits a frame to the Face API. </summary>
         /// <param name="frame"> The video frame to submit. </param>
@@ -418,8 +415,6 @@ namespace LiveCameraSample
         private BitmapSource VisualizeEndGame(VideoFrame frame)
         {
             var bitmap = VisualizeRound(frame);
-            string s = "";
-            int i = 1;
             Dictionary<Guid,int> winners = scoringSystem.GameWinner();
             return Visualization.DrawRoundEnd(bitmap, "End Game", "And the winner is:", winners, playerImages);
 
