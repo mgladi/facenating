@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using GameSystem;
 using Microsoft.ProjectOxford.Common.Contract;
 
@@ -28,6 +29,16 @@ namespace LiveCameraSample
         public string GetRoundTarget()
         {
             return "Oldest";
+        }
+
+        public BitmapImage GetRoundTemplateImage()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetRoundImageText()
+        {
+            throw new NotImplementedException();
         }
 
         public Dictionary<Guid, int> ComputeFrameScorePerPlayer(LiveCameraResult apiResult)

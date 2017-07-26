@@ -58,18 +58,22 @@
     <Reference Include="OpenCvSharp.UserInterface">
       <HintPath>..\packages\OpenCvSharp3-AnyCPU.3.1.0.20160622\lib\net45\OpenCvSharp.UserInterface.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows" />
     <Reference Include="System.Windows.Controls.Ribbon" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ImageProvider.cs" />
     <Compile Include="IRound.cs" />
     <Compile Include="LiveCameraResult.cs" />
     <Compile Include="RoundAge.cs" />
