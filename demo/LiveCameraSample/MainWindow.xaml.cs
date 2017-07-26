@@ -109,8 +109,11 @@ namespace LiveCameraSample
         private DispatcherTimer timer;
         private DateTime roundStart;
         private string timerText = "00:00";
+        private MediaPlayer backgroundMusic;
+        private MediaPlayer sound;
 
         private Dictionary<Guid, List<CroppedBitmap>> playerImages = new Dictionary<Guid, List<CroppedBitmap>>();
+        private List<BitmapSource> groupImages = new List<BitmapSource>();
         private DateTime lastPlayerImagesTime = DateTime.MinValue;
         private int playerImagesTimeOffsetSec = 2;
 
@@ -119,6 +122,9 @@ namespace LiveCameraSample
             currentGroupId = currentGroupName;
             InitializeComponent();
             StartTimer();
+            this.backgroundMusic = SoundProvider.Ukulele;
+            this.backgroundMusic.Volume = 0.05;
+            this.backgroundMusic.Play();
 
             // Create grabber. 
             _grabber = new FrameGrabber<LiveCameraResult>();
@@ -178,7 +184,8 @@ namespace LiveCameraSample
                     {
                         if (roundNumber == NumOfRounds)
                         {
-                            SoundProvider.TheWinner.Play();
+                            this.sound = SoundProvider.TheWinner;
+                            this.sound.Play();
                             currentTimerTask = TimeSpan.FromSeconds(3);
                             gameState = GameState.GameEnd;
                             this.Dispatcher.BeginInvoke((Action)(() =>
@@ -415,6 +422,8 @@ namespace LiveCameraSample
 
             if (DateTime.Now.AddSeconds(-playerImagesTimeOffsetSec) > this.lastPlayerImagesTime)
             {
+                this.groupImages.Add(image);
+
                 foreach (var player in result.Identities)
                 {
                     int offset = 0;
@@ -456,7 +465,7 @@ namespace LiveCameraSample
         {
             var bitmap = VisualizeRound(frame);
             Dictionary<Guid,int> winners = scoringSystem.GameWinner();
-            return Visualization.DrawRoundEnd(bitmap, "End Game", "And the winner is:", winners, playerImages);
+            return Visualization.DrawGameEnd(bitmap, winners, playerImages, groupImages);
 
         }
         private BitmapSource VisualizeRound(VideoFrame frame)
@@ -589,7 +598,8 @@ namespace LiveCameraSample
                 var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
                 byte[] streamBytes = ReadFully(otherJpg);
 
-                SoundProvider.PrepareYourself.Play();
+                this.sound = SoundProvider.PrepareYourself;
+                this.sound.Play();
                 this.gameState = GameState.Explain;
                 this.currentTimerTask = TimeSpan.FromSeconds(3);
                 this.currentTimeTaskStart = DateTime.Now;
@@ -639,7 +649,8 @@ namespace LiveCameraSample
                 roundNumber++;
             }
 
-            SoundProvider.Round(roundNumber).Play();
+            this.sound = SoundProvider.Round(roundNumber);
+            this.sound.Play();
             round = getRandomRound();
             scoringSystem.CreateNewRound();
             this.gameState = GameState.RoundBegin;

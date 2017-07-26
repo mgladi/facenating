@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LiveCameraSample"
         mc:Ignorable="d"
-        Title="LiveCameraSample" Height="550" Width="725" Loaded="Window_Loaded">
+        Title="Facenating" Height="550" Width="725" Loaded="Window_Loaded"  WindowState="Maximized">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="35" />
