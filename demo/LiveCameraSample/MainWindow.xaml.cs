@@ -86,7 +86,7 @@ namespace LiveCameraSample
         private bool _fuseClientRemoteResults;
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
-        private const int NumOfRounds = 5;
+        private const int NumOfRounds = 1;
         private IRound round = null;
         private int roundNumber = 0;
 
@@ -456,7 +456,7 @@ namespace LiveCameraSample
         {
             var bitmap = VisualizeRound(frame);
             Dictionary<Guid,int> winners = scoringSystem.GameWinner();
-            return Visualization.DrawRoundEnd(bitmap, "End Game", "And the winner is:", winners, playerImages);
+            return Visualization.DrawGameEnd(bitmap, winners, playerImages);
 
         }
         private BitmapSource VisualizeRound(VideoFrame frame)
