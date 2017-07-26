@@ -95,7 +95,6 @@ namespace LiveCameraSample
         public enum AppMode
         {
             Participants,
-
             Faces,
             Emotions,
             EmotionsWithClientFaceDetect,
@@ -126,6 +125,10 @@ namespace LiveCameraSample
             StartTimer();
             this.backgroundMusic = SoundProvider.Ukulele;
             this.backgroundMusic.Volume = 0.05;
+            this.backgroundMusic.MediaEnded += new EventHandler((object sender, EventArgs e) => {
+                this.backgroundMusic.Position = TimeSpan.Zero;
+                this.backgroundMusic.Play();
+            });
             this.backgroundMusic.Play();
             t.Elapsed += T_Elapsed;
 
