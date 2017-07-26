@@ -162,6 +162,26 @@ namespace LiveCameraSample
             }
         }
 
+
+        public static BitmapImage GameOver
+        {
+            get
+            {
+                string fullPath = Path.GetFullPath("Data/game_over.png");
+                return new BitmapImage(new Uri(fullPath));
+            }
+        }
+
+
+        public static BitmapImage RoundOver
+        {
+            get
+            {
+                string fullPath = Path.GetFullPath("Data/round_over.png");
+                return new BitmapImage(new Uri(fullPath));
+            }
+        }
+
         public static BitmapImage AgeIndicator
         {
             get

@@ -528,8 +528,8 @@ namespace LiveCameraSample
         private BitmapSource VisualizeEndGame(VideoFrame frame)
         {
             var bitmap = VisualizeRound(frame);
-            Dictionary<Guid,int> winners = scoringSystem.GameWinner();
-            return Visualization.DrawGameEnd(bitmap, winners, playerImages, groupImages);
+            //Dictionary<Guid,int> winners = scoringSystem.GameWinner();
+            return Visualization.DrawGameEnd(bitmap, scoringSystem.TotalScore, playerImages, groupImages);
 
         }
         private BitmapSource VisualizeRound(VideoFrame frame)

@@ -262,6 +262,7 @@ namespace LiveCameraSample
                 var faceRect = new Rect(0, 0, baseImage.Width, baseImage.Height);
                 drawingContext.DrawImage(image, faceRect);
 
+                /*
                 var playerRoundScore = playerScore.ToList();
 
                 if (playerRoundScore != null && playerImages != null)
@@ -291,18 +292,59 @@ namespace LiveCameraSample
                             scorePoint = new System.Windows.Point(100 + 180 * i, 360);
                             drawingContext.DrawText(scoreText, scorePoint);
 
-                            /*if(playerFinalScore != null && playerFinalScore.ContainsKey(player.Key))
+                            if(playerFinalScore != null && playerFinalScore.ContainsKey(player.Key))
                             {
                                 scoreText = new FormattedText("Total: " + playerFinalScore[player.Key].ToString(),
                                     CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 30, Brushes.Red);
 
                                 scorePoint = new System.Windows.Point(18 + 300 * (i % 2), 282 + 160 * (i / 2));
                                 drawingContext.DrawText(scoreText, scorePoint);
-                            }*/
+                            }
                             i++;
                         }
                     }
                 }
+                */
+
+                Guid winnerGuid = playerScore.FirstOrDefault().Key;
+
+                var winnerValue = playerScore[winnerGuid];
+                foreach (var item in playerScore)
+                {
+                    if (playerScore[item.Key] > winnerValue)
+                    {
+                        winnerGuid = item.Key;
+                        winnerValue = playerScore[item.Key];
+                    }
+                }
+                var winnerImages = playerImages[winnerGuid];
+                var r = rnd.Next(winnerImages.Count);
+                var winnerImage = winnerImages[r];
+
+                Dictionary<Guid, List<CroppedBitmap>> losersImages = new Dictionary<Guid, List<CroppedBitmap>>();
+                foreach (var item in playerImages)
+                {
+                    if (item.Key != winnerGuid)
+                    {
+                        losersImages[item.Key] = item.Value;
+                    }
+                }
+
+                List<PlayerScoreAndImage> losersList = new List<PlayerScoreAndImage>();
+                foreach (var item in losersImages)
+                {
+                    var images = item.Value;
+                    r = rnd.Next(images.Count);
+                    var loserImage = images[r];
+                    losersList.Add(new PlayerScoreAndImage()
+                    {
+                        PlayerId = item.Key,
+                        Score = playerScore[item.Key],
+                        Image = loserImage
+                    });
+                }
+
+                drawingContext.DrawImage(winnerImage, new Rect(220, 110, 200, 200));
             };
 
             return DrawOverlay(baseImage, drawAction);
@@ -315,6 +357,11 @@ namespace LiveCameraSample
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
+
+                var image = ImageProvider.GameOver;
+                var faceRect = new Rect(0, 0, baseImage.Width, baseImage.Height);
+                drawingContext.DrawImage(image, faceRect);
+
                 //FormattedText titleText = new FormattedText("End Game!",
                 //CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 25, Brushes.Purple);
                 //var titlePoint = new System.Windows.Point(20, 20);
@@ -352,12 +399,12 @@ namespace LiveCameraSample
                 {
                     var images = item.Value;
                     r = rnd.Next(images.Count);
-                    var image = images[r];
+                    var loserImage = images[r];
                     losersList.Add(new PlayerScoreAndImage()
                     {
                         PlayerId = item.Key,
                         Score = playerScore[item.Key],
-                        Image = image
+                        Image = loserImage
                     });
                 }      
                       

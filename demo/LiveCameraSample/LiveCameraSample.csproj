@@ -160,16 +160,17 @@
     <Content Include="Data\fear_indicator.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Data\happy_indicator.png">
+    <Content Include="Data\game_over.png" >
+     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+	<Content Include="Data\happy_indicator.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Data\insructions.png" >
- <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <Content Include="Data\insructions.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    
     <Content Include="Data\neutral_indicator.png">
-    
-	<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Data\old_indicator.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
