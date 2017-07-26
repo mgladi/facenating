@@ -86,7 +86,7 @@ namespace LiveCameraSample
         private bool _fuseClientRemoteResults;
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
-        private const int NumOfRounds = 4;
+        private const int NumOfRounds = 5;
         private IRound round = null;
         private int roundNumber = 0;
 
@@ -104,12 +104,15 @@ namespace LiveCameraSample
         private TimeSpan currentTimerTask = TimeSpan.FromSeconds(6);
         private DateTime currentTimeTaskStart;
         private GameState gameState = GameState.Participants;
-        private ScoringSystem scoringSystem = new ScoringSystem();
-        private Dictionary<Guid, CroppedBitmap> playerImages = new Dictionary<Guid, CroppedBitmap>();
+        private ScoringSystem scoringSystem = new ScoringSystem(); 
 
         private DispatcherTimer timer;
         private DateTime roundStart;
         private string timerText = "00:00";
+
+        private Dictionary<Guid, List<CroppedBitmap>> playerImages = new Dictionary<Guid, List<CroppedBitmap>>();
+        private DateTime lastPlayerImagesTime = DateTime.MinValue;
+        private int playerImagesTimeOffsetSec = 2;
 
         public MainWindow()
         {
@@ -171,13 +174,18 @@ namespace LiveCameraSample
                         gameState = GameState.RoundEnd;
                         scoringSystem.AddRoundToGameScore();
                     }
-
                     else if (gameState == GameState.RoundEnd)
                     {
                         if (roundNumber == NumOfRounds)
                         {
+                            SoundProvider.TheWinner.Play();
                             currentTimerTask = TimeSpan.FromSeconds(3);
                             gameState = GameState.GameEnd;
+                            this.Dispatcher.BeginInvoke((Action)(() =>
+                            {
+                                button.Visibility = Visibility.Visible;
+                            }));
+                           
                             _grabber.StopProcessingAsync();
                         }
                         else
@@ -285,7 +293,7 @@ namespace LiveCameraSample
 
             this.Dispatcher.BeginInvoke((Action)(() =>
             {
-                button.IsEnabled = currentParticipants.Length > 1;
+                button.Visibility = currentParticipants.Length > 1 && button_mode == "startGame" ? Visibility.Visible : Visibility.Hidden;
             }));
             // Count the API call. 
             Properties.Settings.Default.FaceAPICallCount++;
@@ -314,7 +322,15 @@ namespace LiveCameraSample
             try
             {
                 IdentifyResult[] identities = await _faceClient.IdentifyAsync(currentGroupId, faceIds);
-                var identityDict = identities.Where(i => i.Candidates.Length > 0).ToDictionary(i => i.Candidates[0].PersonId, i => faces.First(f => f.FaceId == i.FaceId));
+                var identityDict = new Dictionary<Guid, Face>();
+
+                foreach (var identity in identities)
+                {
+                    if (identity.Candidates.Length > 0 && identity.Candidates[0].Confidence > 0.6)
+                    {
+                        identityDict[identity.Candidates[0].PersonId] = faces.First(f => f.FaceId == identity.FaceId);
+                    }
+                }
 
                 liveCameraResult.Identities = identityDict;
             }
@@ -392,18 +408,31 @@ namespace LiveCameraSample
 
         private void SavePlayerImages(BitmapSource image, LiveCameraResult result)
         {
-            if (result == null || result.Identities == null)
+            if (result == null || result.Identities == null || this.gameState != GameState.Game)
             {
                 return;
             }
 
-            foreach (var player in result.Identities)
+            if (DateTime.Now.AddSeconds(-playerImagesTimeOffsetSec) > this.lastPlayerImagesTime)
             {
-                Int32Rect faceRectangle = new Int32Rect(player.Value.FaceRectangle.Left, player.Value.FaceRectangle.Top, player.Value.FaceRectangle.Width, player.Value.FaceRectangle.Height);
-                CroppedBitmap playerImage = new CroppedBitmap(image, faceRectangle);
+                foreach (var player in result.Identities)
+                {
+                    int offset = 0;
+                    Int32Rect faceRectangle = new Int32Rect(player.Value.FaceRectangle.Left + offset, player.Value.FaceRectangle.Top + offset, player.Value.FaceRectangle.Width + offset, player.Value.FaceRectangle.Height + offset);
+                    CroppedBitmap playerImage = new CroppedBitmap(image, faceRectangle);
 
-                playerImages[player.Key] = playerImage;
-            }            
+                    if (playerImages.ContainsKey(player.Key))
+                    {                      
+                        playerImages[player.Key].Add(playerImage);
+                    }
+                    else
+                    {
+                        playerImages[player.Key] = new List<CroppedBitmap>() { playerImage };
+                    }
+
+                    lastPlayerImagesTime = DateTime.Now;
+                }
+            }       
         }
 
         private BitmapSource VisualizeStartRound(VideoFrame frame)
@@ -524,35 +553,6 @@ namespace LiveCameraSample
                 }
             };
         }
-
-        private Face CreateFace(Microsoft.ProjectOxford.Vision.Contract.FaceRectangle rect)
-        {
-            return new Face
-            {
-                FaceRectangle = new FaceRectangle
-                {
-                    Left = rect.Left,
-                    Top = rect.Top,
-                    Width = rect.Width,
-                    Height = rect.Height
-                }
-            };
-        }
-
-        private Face CreateFace(Microsoft.ProjectOxford.Common.Rectangle rect)
-        {
-            return new Face
-            {
-                FaceRectangle = new FaceRectangle
-                {
-                    Left = rect.Left,
-                    Top = rect.Top,
-                    Width = rect.Width,
-                    Height = rect.Height
-                }
-            };
-        }
-
         private void MatchAndReplaceFaceRectangles(Face[] faces, OpenCvSharp.Rect[] clientRects)
         {
             // Use a simple heuristic for matching the client-side faces to the faces in the
@@ -579,29 +579,52 @@ namespace LiveCameraSample
             }
         }
 
+        private string button_mode = "startGame";
         private async void button_Click(object sender, RoutedEventArgs e)
         {
-            button.Visibility = Visibility.Hidden;
-
-            var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
-            byte[] streamBytes = ReadFully(otherJpg);
-
-            this.gameState = GameState.Explain;
-            this.currentTimerTask = TimeSpan.FromSeconds(1);
-            this.currentTimeTaskStart = DateTime.Now;
-
-            //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
-            await _faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
-
-            if (currentParticipants.Length > 1)
+            if (button_mode == "startGame")
             {
-                for (int i = 0; i < currentParticipants.Length; i++)
+                button.Content = "Start Again";
+                button_mode = "restartGame";
+                var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
+                byte[] streamBytes = ReadFully(otherJpg);
+
+                SoundProvider.PrepareYourself.Play();
+                this.gameState = GameState.Explain;
+                this.currentTimerTask = TimeSpan.FromSeconds(3);
+                this.currentTimeTaskStart = DateTime.Now;
+                button.Visibility = Visibility.Hidden;
+                this.currentTimeTaskStart = DateTime.Now;
+
+                //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
+                await _faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
+                Face[] clonedCurrentParticipants = (Face[])currentParticipants.Clone();
+
+                if (clonedCurrentParticipants.Length > 1)
                 {
-                    CreatePersonResult person = await _faceClient.CreatePersonAsync(currentGroupId, i.ToString());
-                    MemoryStream s = new MemoryStream(streamBytes);
-                    var addedPersistedPerson = await _faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, s, "userData", currentParticipants[i].FaceRectangle);
+                    for (int i = 0; i < clonedCurrentParticipants.Length; i++)
+                    {
+                        CreatePersonResult person = await _faceClient.CreatePersonAsync(currentGroupId, i.ToString());
+                        MemoryStream s = new MemoryStream(streamBytes);
+                        var addedPersistedPerson = await _faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, s, "userData", clonedCurrentParticipants[i].FaceRectangle);
+                    }
+                    await _faceClient.TrainPersonGroupAsync(currentGroupId);
                 }
-                await _faceClient.TrainPersonGroupAsync(currentGroupId);
+            }
+            else if (button_mode == "restartGame")
+            {
+                currentGroupId = Guid.NewGuid().ToString();
+                currentGroupName = currentGroupId;
+                roundNumber = 0;
+                this.Dispatcher.BeginInvoke((Action)(() =>
+                {
+                    button.Content = "Start Game";
+                    button.Visibility = Visibility.Hidden;
+                    this.gameState = GameState.Participants;
+                    button_mode = "startGame";
+                    updateMode(AppMode.Participants);
+                    _grabber.StartProcessingCameraAsync(0);
+                }));
             }
         }
 
@@ -616,9 +639,9 @@ namespace LiveCameraSample
                 roundNumber++;
             }
 
+            SoundProvider.Round(roundNumber).Play();
             round = getRandomRound();
             scoringSystem.CreateNewRound();
-            playerImages = new Dictionary<Guid, CroppedBitmap>();
             this.gameState = GameState.RoundBegin;
             this.currentTimerTask = TimeSpan.FromSeconds(6);
             this.currentTimeTaskStart = DateTime.Now;
@@ -672,7 +695,7 @@ namespace LiveCameraSample
         private void t_Tick(object sender, EventArgs e)
         {
             TimeSpan timeSpan = currentTimerTask - (DateTime.Now - roundStart);
-            timerText = timeSpan.ToString(@"mm\:ss");
+            timerText = timeSpan.ToString(@"ss");
         }
     }
 }

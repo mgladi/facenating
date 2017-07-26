@@ -19,7 +19,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                string fullPath = Path.GetFullPath("Data/round_sad.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
@@ -27,7 +27,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                string fullPath = Path.GetFullPath("Data/round_angry.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
@@ -35,15 +35,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/round_happy.png");
-                return new BitmapImage(new Uri(fullPath));
-            }
-        }
-        public static BitmapImage ContemptRound
-        {
-            get
-            {
-                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                string fullPath = Path.GetFullPath("Data/round_disgust.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
@@ -51,7 +43,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                string fullPath = Path.GetFullPath("Data/round_neutral.png.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
@@ -59,7 +51,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                string fullPath = Path.GetFullPath("Data/round_suprised.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
@@ -67,7 +59,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/round_happy.png");
+                string fullPath = Path.GetFullPath("Data/round_fear.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }

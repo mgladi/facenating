@@ -193,10 +193,9 @@ namespace LiveCameraSample
             DrawingVisual visual = new DrawingVisual();
             DrawingContext drawingContext = visual.RenderOpen();
 
-
             FormattedText ft = new FormattedText(showTime,
                 CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
-                20, Brushes.Yellow);
+                50, Brushes.White);
 
             drawingContext.DrawImage(lastBitmap, new Rect(0, 0, lastBitmap.Width, lastBitmap.Height));
 
@@ -232,7 +231,7 @@ namespace LiveCameraSample
                 FormattedText roundNmberText = new FormattedText(roundNum.ToString(),
                     CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 40, Brushes.White);
 
-                var roundNumberPoint = new System.Windows.Point(200, 13);
+                var roundNumberPoint = new System.Windows.Point(200, 16);
                 drawingContext.DrawText(roundNmberText, roundNumberPoint);
 
             };
@@ -241,7 +240,7 @@ namespace LiveCameraSample
         }
 
 
-        public static BitmapSource DrawRoundEnd(BitmapSource baseImage, string title, string content, Dictionary<Guid, int> playerRoundScore, Dictionary<Guid, CroppedBitmap> playerImages = null, Dictionary<Guid, int> playerFinalScore=null)
+        public static BitmapSource DrawRoundEnd(BitmapSource baseImage, string title, string content, Dictionary<Guid, int> playerRoundScore, Dictionary<Guid, List<CroppedBitmap>> playerImages = null, Dictionary<Guid, int> playerFinalScore=null)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
@@ -265,7 +264,7 @@ namespace LiveCameraSample
                         if(playerImages.ContainsKey(player.Key))
                         {
                             Rect rect = new Rect(20 + 300 * (i % 2), 230 + 140 * (i / 2), 80, 80);
-                            drawingContext.DrawImage(playerImages[player.Key], rect);
+                            drawingContext.DrawImage(playerImages[player.Key][0], rect);
                             FormattedText scoreText = new FormattedText(player.Value.ToString(),
                                 CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 30, Brushes.Black);
 
