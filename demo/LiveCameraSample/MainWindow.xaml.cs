@@ -113,6 +113,7 @@ namespace LiveCameraSample
         private MediaPlayer sound;
 
         private Dictionary<Guid, List<CroppedBitmap>> playerImages = new Dictionary<Guid, List<CroppedBitmap>>();
+        private List<BitmapSource> groupImages = new List<BitmapSource>();
         private DateTime lastPlayerImagesTime = DateTime.MinValue;
         private int playerImagesTimeOffsetSec = 2;
 
@@ -421,6 +422,8 @@ namespace LiveCameraSample
 
             if (DateTime.Now.AddSeconds(-playerImagesTimeOffsetSec) > this.lastPlayerImagesTime)
             {
+                this.groupImages.Add(image);
+
                 foreach (var player in result.Identities)
                 {
                     int offset = 0;
@@ -462,7 +465,7 @@ namespace LiveCameraSample
         {
             var bitmap = VisualizeRound(frame);
             Dictionary<Guid,int> winners = scoringSystem.GameWinner();
-            return Visualization.DrawRoundEnd(bitmap, "End Game", "And the winner is:", winners, playerImages);
+            return Visualization.DrawGameEnd(bitmap, winners, playerImages, groupImages);
 
         }
         private BitmapSource VisualizeRound(VideoFrame frame)
