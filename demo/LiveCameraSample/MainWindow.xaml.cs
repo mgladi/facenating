@@ -86,7 +86,7 @@ namespace LiveCameraSample
         private bool _fuseClientRemoteResults;
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
-        private const int NumOfRounds =4;
+        private const int NumOfRounds = 5;
         private IRound round = null;
         private int roundNumber = 0;
 
@@ -104,12 +104,15 @@ namespace LiveCameraSample
         private TimeSpan currentTimerTask = TimeSpan.FromSeconds(6);
         private DateTime currentTimeTaskStart;
         private GameState gameState = GameState.Participants;
-        private ScoringSystem scoringSystem = new ScoringSystem();
-        private Dictionary<Guid, CroppedBitmap> playerImages = new Dictionary<Guid, CroppedBitmap>();
+        private ScoringSystem scoringSystem = new ScoringSystem(); 
 
         private DispatcherTimer timer;
         private DateTime roundStart;
         private string timerText = "00:00";
+
+        private Dictionary<Guid, List<CroppedBitmap>> playerImages = new Dictionary<Guid, List<CroppedBitmap>>();
+        private DateTime lastPlayerImagesTime = DateTime.MinValue;
+        private int playerImagesTimeOffsetSec = 2;
 
         public MainWindow()
         {
@@ -175,6 +178,7 @@ namespace LiveCameraSample
                     {
                         if (roundNumber == NumOfRounds)
                         {
+                            SoundProvider.TheWinner.Play();
                             currentTimerTask = TimeSpan.FromSeconds(3);
                             gameState = GameState.GameEnd;
                             this.Dispatcher.BeginInvoke((Action)(() =>
@@ -404,18 +408,31 @@ namespace LiveCameraSample
 
         private void SavePlayerImages(BitmapSource image, LiveCameraResult result)
         {
-            if (result == null || result.Identities == null)
+            if (result == null || result.Identities == null || this.gameState != GameState.Game)
             {
                 return;
             }
 
-            foreach (var player in result.Identities)
+            if (DateTime.Now.AddSeconds(-playerImagesTimeOffsetSec) > this.lastPlayerImagesTime)
             {
-                Int32Rect faceRectangle = new Int32Rect(player.Value.FaceRectangle.Left, player.Value.FaceRectangle.Top, player.Value.FaceRectangle.Width, player.Value.FaceRectangle.Height);
-                CroppedBitmap playerImage = new CroppedBitmap(image, faceRectangle);
+                foreach (var player in result.Identities)
+                {
+                    int offset = 0;
+                    Int32Rect faceRectangle = new Int32Rect(player.Value.FaceRectangle.Left + offset, player.Value.FaceRectangle.Top + offset, player.Value.FaceRectangle.Width + offset, player.Value.FaceRectangle.Height + offset);
+                    CroppedBitmap playerImage = new CroppedBitmap(image, faceRectangle);
 
-                playerImages[player.Key] = playerImage;
-            }            
+                    if (playerImages.ContainsKey(player.Key))
+                    {                      
+                        playerImages[player.Key].Add(playerImage);
+                    }
+                    else
+                    {
+                        playerImages[player.Key] = new List<CroppedBitmap>() { playerImage };
+                    }
+
+                    lastPlayerImagesTime = DateTime.Now;
+                }
+            }       
         }
 
         private BitmapSource VisualizeStartRound(VideoFrame frame)
@@ -536,35 +553,6 @@ namespace LiveCameraSample
                 }
             };
         }
-
-        private Face CreateFace(Microsoft.ProjectOxford.Vision.Contract.FaceRectangle rect)
-        {
-            return new Face
-            {
-                FaceRectangle = new FaceRectangle
-                {
-                    Left = rect.Left,
-                    Top = rect.Top,
-                    Width = rect.Width,
-                    Height = rect.Height
-                }
-            };
-        }
-
-        private Face CreateFace(Microsoft.ProjectOxford.Common.Rectangle rect)
-        {
-            return new Face
-            {
-                FaceRectangle = new FaceRectangle
-                {
-                    Left = rect.Left,
-                    Top = rect.Top,
-                    Width = rect.Width,
-                    Height = rect.Height
-                }
-            };
-        }
-
         private void MatchAndReplaceFaceRectangles(Face[] faces, OpenCvSharp.Rect[] clientRects)
         {
             // Use a simple heuristic for matching the client-side faces to the faces in the
@@ -601,6 +589,7 @@ namespace LiveCameraSample
                 var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
                 byte[] streamBytes = ReadFully(otherJpg);
 
+                SoundProvider.PrepareYourself.Play();
                 this.gameState = GameState.Explain;
                 this.currentTimerTask = TimeSpan.FromSeconds(3);
                 this.currentTimeTaskStart = DateTime.Now;
@@ -648,9 +637,9 @@ namespace LiveCameraSample
                 roundNumber++;
             }
 
+            SoundProvider.Round(roundNumber).Play();
             round = getRandomRound();
             scoringSystem.CreateNewRound();
-            playerImages = new Dictionary<Guid, CroppedBitmap>();
             this.gameState = GameState.RoundBegin;
             this.currentTimerTask = TimeSpan.FromSeconds(6);
             this.currentTimeTaskStart = DateTime.Now;
