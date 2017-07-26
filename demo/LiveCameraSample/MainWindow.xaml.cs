@@ -634,7 +634,7 @@ namespace LiveCameraSample
                 this.sound = SoundProvider.PrepareYourself;
                 this.sound.Play();
                 this.gameState = GameState.Explain;
-                this.currentTimerTask = TimeSpan.FromSeconds(3);
+                this.currentTimerTask = TimeSpan.FromSeconds(12);
                 this.currentTimeTaskStart = DateTime.Now;
                 button.Visibility = Visibility.Hidden;
                 this.currentTimeTaskStart = DateTime.Now;
