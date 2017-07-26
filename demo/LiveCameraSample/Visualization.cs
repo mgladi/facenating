@@ -52,7 +52,7 @@ namespace LiveCameraSample
     public class Visualization
     {
         private static SolidColorBrush s_lineBrush = new SolidColorBrush(new System.Windows.Media.Color { R = 255, G = 185, B = 0, A = 255 });
-
+        private static Random rnd = new Random();
         private static SolidColorBrush s_lineBrush1 = new SolidColorBrush(new System.Windows.Media.Color { R = 26, G = 130, B = 196, A = 255 });
         private static SolidColorBrush s_lineBrush2 = new SolidColorBrush(new System.Windows.Media.Color { R = 255, G = 203, B = 57, A = 255});
         private static SolidColorBrush s_lineBrush3 = new SolidColorBrush(new System.Windows.Media.Color { R = 241, G = 91, B = 96, A = 255});
@@ -291,6 +291,65 @@ namespace LiveCameraSample
 
             return DrawOverlay(baseImage, drawAction);
         }
+
+
+
+        public static BitmapSource DrawGameEnd(BitmapSource baseImage, 
+            Dictionary<Guid, int> playerScore, 
+            Dictionary<Guid, List<CroppedBitmap>> playerImages = null,
+            List<BitmapSource> groupImages = null)
+        {
+            Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
+            {
+                FormattedText titleText = new FormattedText("End Game!",
+                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 25, Brushes.Purple);
+                var titlePoint = new System.Windows.Point(20, 20);
+
+                var contentPoint = new System.Windows.Point(20, 60);
+
+                drawingContext.DrawText(titleText, titlePoint);
+
+                if (playerScore != null && playerImages != null)
+                {
+                    int i = 0;
+                    foreach (var player in playerScore)
+                    {
+                        if (playerImages.ContainsKey(player.Key))
+                        {
+                            Rect rect = new Rect(20 + 60 * (i % 2), 90 + 30 * (i / 2), 30, 30);
+                            drawingContext.DrawImage(playerImages[player.Key][0], rect); //TODO
+                            FormattedText scoreText = new FormattedText(player.Value.ToString(),
+                                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 14, Brushes.Black);
+
+                            var scorePoint = new System.Windows.Point(52 + 60 * (i % 2), 95 + 30 * (i / 2));
+                            drawingContext.DrawText(scoreText, scorePoint);
+                            i++;
+                        }
+                    }
+                }
+
+                
+                if (playerImages != null )
+                {
+                    List<CroppedBitmap> images = new List<CroppedBitmap>();
+                    foreach (var item in playerImages)
+                    {
+                        foreach (var image in item.Value)
+                        {
+                            images.Add(image);
+                        }
+                    }
+
+                    int r = rnd.Next(images.Count);
+                    drawingContext.DrawImage(images[r], new Rect(100,200,250, 200)); //TODO
+
+                }
+            };
+
+            return DrawOverlay(baseImage, drawAction);
+        }
+
+
 
         public static BitmapSource DrawExplain(BitmapSource baseImage)
         {
