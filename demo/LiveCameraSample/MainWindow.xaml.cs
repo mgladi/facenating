@@ -598,7 +598,7 @@ namespace LiveCameraSample
             byte[] streamBytes = ReadFully(otherJpg);
 
             this.gameState = GameState.Explain;
-            this.currentTimerTask = TimeSpan.FromSeconds(15);
+            this.currentTimerTask = TimeSpan.FromSeconds(3);
             this.currentTimeTaskStart = DateTime.Now;
 
             //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
