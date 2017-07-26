@@ -303,24 +303,6 @@ namespace LiveCameraSample
         }
         }
 
-        /// <summary> Function which submits a frame to the Face API. </summary>
-        /// <param name="frame"> The video frame to submit. </param>
-        /// <returns> A <see cref="Task{LiveCameraResult}"/> representing the asynchronous API call,
-        ///     and containing the faces returned by the API. </returns>
-        private async Task<LiveCameraResult> FacesAnalysisFunction(VideoFrame frame)
-        {
-            // Encode image. 
-            var jpg = frame.Image.ToMemoryStream(".jpg", s_jpegParams);
-            // Submit image to API. 
-            var attrs = new List<FaceAttributeType> { FaceAttributeType.Age,
-                FaceAttributeType.Gender, FaceAttributeType.HeadPose };
-            var faces = await _faceClient.DetectAsync(jpg, returnFaceAttributes: attrs);
-            // Count the API call. 
-            Properties.Settings.Default.FaceAPICallCount++;
-            // Output. 
-            return new LiveCameraResult { Faces = faces };
-        }
-
         private VideoFrame lastFrame;
         private Face[] currentParticipants;
 
@@ -429,8 +411,6 @@ namespace LiveCameraSample
                     // Compute round score
                     Dictionary<Guid, int> scores = round.ComputeFrameScorePerPlayer(result);
                     scoringSystem.AddToCurrentRound(scores);
-                    visImage = Visualization.DrawSomething(visImage, round.GetRoundTarget(), new Point(0, 0));
-
                     visImage = Visualization.DrawFaces(visImage, round, result.Identities, scoringSystem, _mode);
 
                     SavePlayerImages(frame.Image.ToBitmapSource(), result);
@@ -512,7 +492,6 @@ namespace LiveCameraSample
         {
 
             var bitmap = VisualizeRound(frame);
-            var description = round.GetRoundDescription();
             
             return Visualization.DrawRoundStart(bitmap, round, roundNumber);
         }
@@ -613,19 +592,6 @@ namespace LiveCameraSample
             e.Handled = true;
         }
 
-        private Face CreateFace(FaceRectangle rect)
-        {
-            return new Face
-            {
-                FaceRectangle = new FaceRectangle
-                {
-                    Left = rect.Left,
-                    Top = rect.Top,
-                    Width = rect.Width,
-                    Height = rect.Height
-                }
-            };
-        }
         private void MatchAndReplaceFaceRectangles(Face[] faces, OpenCvSharp.Rect[] clientRects)
         {
             // Use a simple heuristic for matching the client-side faces to the faces in the
