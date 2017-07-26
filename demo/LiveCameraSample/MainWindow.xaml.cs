@@ -149,10 +149,10 @@ namespace LiveCameraSample
                     {
                         RightImage.Source = VisualizeResult(e.Frame);
                     }
-                    if (gameState == GameState.Game)
-                    {
-                        RightImage.Source = VisualizeTimer();
-                    }
+                    //if (gameState == GameState.Game)
+                   // {
+                      //  RightImage.Source = VisualizeTimer();
+                    //}
                 }));
 
                 if (DateTime.Now - currentTimeTaskStart > currentTimerTask)
@@ -384,11 +384,11 @@ namespace LiveCameraSample
 
                 if (this.gameState == GameState.RoundBegin)
                 {
-                    visImage = VisualizeStartRound();
+                    visImage = VisualizeStartRound(frame);
                 }
                 else if (this.gameState == GameState.RoundEnd)
                 {
-                    visImage = VisualizeEndRound();
+                    visImage = VisualizeEndRound(frame);
                 }
                 else if (this.gameState == GameState.Game)
                 {
@@ -408,7 +408,7 @@ namespace LiveCameraSample
                 }
                 else if (this.gameState == GameState.GameEnd)
                 {
-                    visImage = VisualizeEndGame();
+                    visImage = VisualizeEndGame(frame);
                 }
             }
 
@@ -440,49 +440,43 @@ namespace LiveCameraSample
             }            
         }
 
-        private BitmapSource VisualizeStartRound()
+        private BitmapSource VisualizeStartRound(VideoFrame frame)
         {
-            var bitmap = VisualizeRound();
+
+            var bitmap = VisualizeRound(frame);
             var description = round.GetRoundDescription();
             
             return Visualization.DrawRoundStart(bitmap, round);
         }
 
-        private BitmapSource VisualizeEndRound()
+        private BitmapSource VisualizeEndRound(VideoFrame frame)
         {
-            var bitmap = VisualizeRound();
+            var bitmap = VisualizeRound(frame);
             string s = "Round Score:\n";
 
             return Visualization.DrawRoundEnd(bitmap, "End round " + roundNumber, s, scoringSystem.TotalScore, playerImages);
 
         }
-        private BitmapSource VisualizeEndGame()
+        private BitmapSource VisualizeEndGame(VideoFrame frame)
         {
-            var bitmap = VisualizeRound();
+            var bitmap = VisualizeRound(frame);
             string s = "";
             int i = 1;
             Dictionary<Guid,int> winners = scoringSystem.GameWinner();
             return Visualization.DrawRoundEnd(bitmap, "End Game", "And the winner is:", winners, playerImages);
 
         }
-        private BitmapSource VisualizeRound()
+        private BitmapSource VisualizeRound(VideoFrame frame)
         {
+            PixelFormat pf = PixelFormats.Rgba64;
+
             // Define parameters used to create the BitmapSource.
-            PixelFormat pf = PixelFormats.Gray2;
-            int width = 200;
-            int height = 150;
+            int width = frame.Image.Width;
+            int height = frame.Image.Height;
             int rawStride = (width * pf.BitsPerPixel + 7) / 8;
             byte[] rawImage = new byte[rawStride * height];
 
-            // Initialize the image with data.
-            Random value = new Random();
-            value.NextBytes(rawImage);
-
-            // Create a BitmapSource.
-            BitmapSource bitmap = BitmapSource.Create(width, height,
-                96, 96, pf, null,
-                rawImage, rawStride);
-            return bitmap;
+            return BitmapSource.Create(frame.Image.Width, frame.Image.Height, 0, 0, pf, null, rawImage, rawStride);
         }
 
         /// <summary> Populate ModeList in the UI, once it is loaded. </summary>
