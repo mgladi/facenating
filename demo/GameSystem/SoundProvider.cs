@@ -8,6 +8,17 @@ namespace LiveCameraSample
 {
     public static class SoundProvider
     {
+        public static MediaPlayer Ukulele
+        {
+            get
+            {
+                MediaPlayer sound = new MediaPlayer();
+                string fullPath = Path.GetFullPath("Vocals/Ukulele.mp3");
+                sound.Open(new Uri(fullPath));
+                return sound;
+            }
+        }
+
         public static MediaPlayer PrepareYourself
         {
             get
