@@ -597,14 +597,15 @@ namespace LiveCameraSample
 
                 //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
                 await _faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
+                Face[] clonedCurrentParticipants = (Face[])currentParticipants.Clone();
 
-                if (currentParticipants.Length > 1)
+                if (clonedCurrentParticipants.Length > 1)
                 {
-                    for (int i = 0; i < currentParticipants.Length; i++)
+                    for (int i = 0; i < clonedCurrentParticipants.Length; i++)
                     {
                         CreatePersonResult person = await _faceClient.CreatePersonAsync(currentGroupId, i.ToString());
                         MemoryStream s = new MemoryStream(streamBytes);
-                        var addedPersistedPerson = await _faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, s, "userData", currentParticipants[i].FaceRectangle);
+                        var addedPersistedPerson = await _faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, s, "userData", clonedCurrentParticipants[i].FaceRectangle);
                     }
                     await _faceClient.TrainPersonGroupAsync(currentGroupId);
                 }
