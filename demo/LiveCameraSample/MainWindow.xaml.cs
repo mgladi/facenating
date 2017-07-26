@@ -287,15 +287,26 @@ namespace LiveCameraSample
             Face[] faces = await _faceClient.DetectAsync(jpg, returnFaceAttributes: attrs);
             Guid[] faceIds = faces.Select(face => face.FaceId).ToArray();
 
-            IdentifyResult[] identities = await _faceClient.IdentifyAsync(currentGroupId, faceIds);
-            var identityDict = identities.Where(i => i.Candidates.Length > 0).ToDictionary(i => i.Candidates[0].PersonId, i => faces.First(f => f.FaceId == i.FaceId));
-
-            return new LiveCameraResult
+            
+            var liveCameraResult = new LiveCameraResult
             {
-                Identities = identityDict,
                 Faces = faces,
                 EmotionScores = faces.Select(f => f.FaceAttributes.Emotion).ToArray()
             };
+
+            try
+            {
+                IdentifyResult[] identities = await _faceClient.IdentifyAsync(currentGroupId, faceIds);
+                var identityDict = identities.Where(i => i.Candidates.Length > 0).ToDictionary(i => i.Candidates[0].PersonId, i => faces.First(f => f.FaceId == i.FaceId));
+
+                liveCameraResult.Identities = identityDict;
+            }
+            catch (Exception e)
+            {
+
+            }
+
+            return liveCameraResult;
         }
 
         /// <summary> Function which submits a frame to the Computer Vision API for tagging. </summary>
@@ -388,6 +399,11 @@ namespace LiveCameraSample
 
         private void SavePlayerImages(BitmapSource image, LiveCameraResult result)
         {
+            if (result == null || result.Identities == null)
+            {
+                return;
+            }
+
             foreach (var player in result.Identities)
             {
                 Int32Rect faceRectangle = new Int32Rect(player.Value.FaceRectangle.Left, player.Value.FaceRectangle.Top, player.Value.FaceRectangle.Width, player.Value.FaceRectangle.Height);
