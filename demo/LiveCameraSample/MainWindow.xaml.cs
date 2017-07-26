@@ -315,7 +315,15 @@ namespace LiveCameraSample
             try
             {
                 IdentifyResult[] identities = await _faceClient.IdentifyAsync(currentGroupId, faceIds);
-                var identityDict = identities.Where(i => i.Candidates.Length > 0).ToDictionary(i => i.Candidates[0].PersonId, i => faces.First(f => f.FaceId == i.FaceId));
+                var identityDict = new Dictionary<Guid, Face>();
+
+                foreach (var identity in identities)
+                {
+                    if (identity.Candidates.Length > 0 && identity.Candidates[0].Confidence > 0.6)
+                    {
+                        identityDict[identity.Candidates[0].PersonId] = faces.First(f => f.FaceId == identity.FaceId);
+                    }
+                }
 
                 liveCameraResult.Identities = identityDict;
             }
@@ -560,7 +568,7 @@ namespace LiveCameraSample
 
             SoundProvider.PrepareYourself.Play();
             this.gameState = GameState.Explain;
-            this.currentTimerTask = TimeSpan.FromSeconds(15);
+            this.currentTimerTask = TimeSpan.FromSeconds(3);
             this.currentTimeTaskStart = DateTime.Now;
 
             //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
