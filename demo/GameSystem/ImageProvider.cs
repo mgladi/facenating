@@ -125,7 +125,6 @@ namespace LiveCameraSample
             }
         }
 
-
         public static BitmapImage FearRound
         {
             get

@@ -86,7 +86,7 @@ namespace LiveCameraSample
         private bool _fuseClientRemoteResults;
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
-        private const int NumOfRounds = 1;
+        private const int NumOfRounds = 5;
         private IRound round = null;
         private int roundNumber = 0;
 
