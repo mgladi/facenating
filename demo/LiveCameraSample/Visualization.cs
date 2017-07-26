@@ -240,7 +240,11 @@ namespace LiveCameraSample
         }
 
 
-        public static BitmapSource DrawRoundEnd(BitmapSource baseImage, string title, string content, Dictionary<Guid, int> playerRoundScore, Dictionary<Guid, List<CroppedBitmap>> playerImages = null, Dictionary<Guid, int> playerFinalScore=null)
+        public static BitmapSource DrawRoundEnd(BitmapSource baseImage, string title, string content, 
+            Dictionary<Guid, int> playerRoundScore, 
+            Dictionary<Guid, List<CroppedBitmap>> playerImages = null, 
+            Dictionary<Guid, int> playerFinalScore = null, 
+            List<BitmapSource> groupImages = null)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
@@ -290,7 +294,10 @@ namespace LiveCameraSample
 
 
 
-        public static BitmapSource DrawGameEnd(BitmapSource baseImage, Dictionary<Guid, int> playerScore, Dictionary<Guid, List<CroppedBitmap>> playerImages = null)
+        public static BitmapSource DrawGameEnd(BitmapSource baseImage, 
+            Dictionary<Guid, int> playerScore, 
+            Dictionary<Guid, List<CroppedBitmap>> playerImages = null,
+            List<BitmapSource> groupImages = null)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
