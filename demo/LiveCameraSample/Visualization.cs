@@ -91,8 +91,6 @@ namespace LiveCameraSample
             var ratio = ((1.0) * baseImage.PixelHeight) / ((1.0) * baseImage.PixelWidth); 
             if (faces == null)
             {
-                /*
-                */
                 return baseImage;
             }
 
@@ -107,7 +105,6 @@ namespace LiveCameraSample
                     // Instead of calling DrawText (which can only draw the text in a solid colour), we
                     // convert to geometry and use DrawGeometry, which allows us to add an outline. 
                     drawingContext.DrawText(ft, new Point(130,30));
-                    
                 }
                 for (int i = 0; i < faces.Length; i++)
                 {
@@ -254,7 +251,20 @@ namespace LiveCameraSample
             return DrawOverlay(baseImage, drawAction, true);
         }
 
-        public static BitmapSource DrawRound(BitmapSource baseImage, string title, string content, Dictionary<Guid, CroppedBitmap> playerImages = null)
+        public static BitmapSource DrawRoundStart(BitmapSource baseImage, IRound round)
+        {
+            Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
+            {
+                var image = round.GetRoundTemplateImage();
+                
+                drawingContext.DrawImage(image, new Rect(0,0,baseImage.Width, baseImage.Height));
+            };
+
+            return DrawOverlay(baseImage, drawAction);
+        }
+
+
+        public static BitmapSource DrawRoundEnd(BitmapSource baseImage, string title, string content, Dictionary<Guid, CroppedBitmap> playerImages = null)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
@@ -273,6 +283,7 @@ namespace LiveCameraSample
 
             return DrawOverlay(baseImage, drawAction);
         }
+
 
         public static BitmapSource DrawFaces(BitmapSource baseImage, Dictionary<Guid, Microsoft.ProjectOxford.Face.Contract.Face> identities, ScoringSystem scoring)
         {
@@ -313,11 +324,13 @@ namespace LiveCameraSample
 
                     double lineThickness = 4 * annotationScale;
 
-                    drawingContext.DrawRectangle(
-                        Brushes.Transparent,
-                        new Pen(s_lineBrush, lineThickness),
-                        faceRect);
+                       drawingContext.DrawRectangle(
+                           Brushes.Transparent,
+                           new Pen(s_lineBrush, lineThickness),
+                           faceRect);
+                           
 
+                    //drawingContext.DrawImage(ImageProvider.Frame, faceRect);
                     if (text != "")
                     {
                         FormattedText ft = new FormattedText(text,

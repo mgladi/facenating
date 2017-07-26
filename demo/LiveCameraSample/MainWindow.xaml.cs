@@ -441,7 +441,8 @@ namespace LiveCameraSample
         {
             var bitmap = VisualizeRound();
             var description = round.GetRoundDescription();
-            return Visualization.DrawRound(bitmap, "Start round " + roundNumber, description);
+            
+            return Visualization.DrawRoundStart(bitmap, round);
 
         }
 
@@ -454,7 +455,7 @@ namespace LiveCameraSample
             {
                 s += i++ + ": " + item.Value + "\n";
             }
-            return Visualization.DrawRound(bitmap, "End round " + roundNumber, "Get Ready...", playerImages);
+            return Visualization.DrawRoundEnd(bitmap, "End round " + roundNumber, "Get Ready...", playerImages);
 
         }
         private BitmapSource VisualizeEndGame()
@@ -466,7 +467,7 @@ namespace LiveCameraSample
             {
                 s += i++ + ": " + item.Value + "\n";
             }
-            return Visualization.DrawRound(bitmap, "End Game", "And the winner is....", playerImages);
+            return Visualization.DrawRoundEnd(bitmap, "End Game", "And the winner is....", playerImages);
 
         }
         private BitmapSource VisualizeRound()
@@ -683,7 +684,7 @@ namespace LiveCameraSample
             scoringSystem.CreateNewRound();
             playerImages = new Dictionary<Guid, CroppedBitmap>();
             this.gameState = GameState.RoundBegin;
-            this.currentTimerTask = TimeSpan.FromSeconds(3);
+            this.currentTimerTask = TimeSpan.FromSeconds(6);
             this.currentTimeTaskStart = DateTime.Now;
         }
 
