@@ -122,6 +122,7 @@ namespace LiveCameraSample
             InitializeComponent();
             StartTimer();
             this.backgroundMusic = SoundProvider.Ukulele;
+            this.backgroundMusic.Volume = 0.05;
             this.backgroundMusic.Play();
 
             // Create grabber. 
