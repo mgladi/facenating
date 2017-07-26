@@ -19,7 +19,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/sad_round_template.png");
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
@@ -27,7 +27,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/sad_round_template.png");
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
@@ -35,7 +35,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/sad_round_template.png");
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
@@ -43,7 +43,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/sad_round_template.png");
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
@@ -51,7 +51,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/sad_round_template.png");
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
@@ -59,7 +59,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/sad_round_template.png");
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
@@ -67,7 +67,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/sad_round_template.png");
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
@@ -75,7 +75,7 @@ namespace LiveCameraSample
         {
             get
             {
-                string fullPath = Path.GetFullPath("Data/sad_round_template.png");
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
