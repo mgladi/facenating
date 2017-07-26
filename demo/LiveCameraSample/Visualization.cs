@@ -256,15 +256,17 @@ namespace LiveCameraSample
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
                 var image = round.GetRoundTemplateImage();
-                
-                drawingContext.DrawImage(image, new Rect(0,0,baseImage.Width, baseImage.Height));
+                var faceRect = new Rect(0, 0, baseImage.Width, baseImage.Height);
+                faceRect.Inflate(6 * annotationScale, 6 * annotationScale);
+
+                drawingContext.DrawImage(image, faceRect);
             };
 
             return DrawOverlay(baseImage, drawAction);
         }
 
 
-        public static BitmapSource DrawRoundEnd(BitmapSource baseImage, string title, string content, Dictionary<Guid, CroppedBitmap> playerImages = null)
+        public static BitmapSource DrawRoundEnd(BitmapSource baseImage, string title, string content, Dictionary<Guid, int> playerScore, Dictionary<Guid, CroppedBitmap> playerImages = null)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {

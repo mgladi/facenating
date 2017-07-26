@@ -443,7 +443,6 @@ namespace LiveCameraSample
             var description = round.GetRoundDescription();
             
             return Visualization.DrawRoundStart(bitmap, round);
-
         }
 
         private BitmapSource VisualizeEndRound()
@@ -460,7 +459,7 @@ namespace LiveCameraSample
             string s = "";
             int i = 1;
             Dictionary<Guid,int> winners = scoringSystem.GameWinner();
-            return Visualization.DrawRound(bitmap, "End Game", "And the winner is:", winners, playerImages);
+            return Visualization.DrawRoundEnd(bitmap, "End Game", "And the winner is:", winners, playerImages);
 
         }
         private BitmapSource VisualizeRound()
