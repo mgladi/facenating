@@ -88,7 +88,7 @@ namespace LiveCameraSample
         private bool _fuseClientRemoteResults;
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
-        private const int NumOfRounds = 4;
+        private const int NumOfRounds = 1;
         private IRound round = null;
         private int roundNumber = 0;
 
@@ -105,7 +105,7 @@ namespace LiveCameraSample
         private TimeSpan currentTimerTask = TimeSpan.FromSeconds(6);
         private DateTime currentTimeTaskStart;
         private GameState gameState = GameState.Participants;
-        private ScoringSystem scoringSystem = new ScoringSystem(); 
+        private ScoringSystem scoringSystem; 
 
         private DispatcherTimer timer;
         private DateTime roundStart;
@@ -183,7 +183,7 @@ namespace LiveCameraSample
                     }
                     else if (gameState == GameState.Game)
                     {
-                        currentTimerTask = TimeSpan.FromSeconds(3);
+                        currentTimerTask = TimeSpan.FromSeconds(6);
                         currentTimeTaskStart = DateTime.Now;
                         gameState = GameState.RoundEnd;
                         scoringSystem.AddRoundToGameScore();
@@ -203,7 +203,6 @@ namespace LiveCameraSample
                                 button.Visibility = Visibility.Visible;
                             }));
                            
-                            _grabber.StopProcessingAsync();
                         }
                         else
                         {
@@ -275,7 +274,7 @@ namespace LiveCameraSample
 
         List<BitmapSource> images = new List<BitmapSource>();
 
-        System.Timers.Timer t = new System.Timers.Timer(3000);
+        System.Timers.Timer t = new System.Timers.Timer(2000);
         private void StartEndImages()
         {
             images.Clear();
@@ -422,6 +421,7 @@ namespace LiveCameraSample
                 }
                 else if (this.gameState == GameState.GameEnd)
                 {
+                    _grabber.StopProcessingAsync();
                     visImage = VisualizeEndGame(frame);
                 }
             }
@@ -631,7 +631,7 @@ namespace LiveCameraSample
                 this.sound = SoundProvider.PrepareYourself;
                 this.sound.Play();
                 this.gameState = GameState.Explain;
-                this.currentTimerTask = TimeSpan.FromSeconds(3);
+                this.currentTimerTask = TimeSpan.FromSeconds(15);
                 this.currentTimeTaskStart = DateTime.Now;
                 button.Visibility = Visibility.Hidden;
                 this.currentTimeTaskStart = DateTime.Now;
@@ -639,15 +639,24 @@ namespace LiveCameraSample
                 //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
                 await _faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
                 Face[] clonedCurrentParticipants = (Face[])currentParticipants.Clone();
-
+                List<Guid> personids = new List<Guid>();
                 if (clonedCurrentParticipants.Length > 1)
                 {
+
+                    var bitmap = lastFrame.Image.ToBitmapSource();
                     for (int i = 0; i < clonedCurrentParticipants.Length; i++)
                     {
                         CreatePersonResult person = await _faceClient.CreatePersonAsync(currentGroupId, i.ToString());
+                        personids.Add(person.PersonId);
                         MemoryStream s = new MemoryStream(streamBytes);
+                        var rect = clonedCurrentParticipants[i].FaceRectangle;
+                        var int32Rect = new Int32Rect(rect.Left, rect.Top, rect.Width, rect.Height);
+                        CroppedBitmap playerBitmap = new CroppedBitmap(bitmap, int32Rect);
+                        playerImages[person.PersonId] = new List<CroppedBitmap>();
+                        playerImages[person.PersonId].Add(playerBitmap);
                         var addedPersistedPerson = await _faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, s, "userData", clonedCurrentParticipants[i].FaceRectangle);
                     }
+                    scoringSystem = new ScoringSystem(personids.ToArray());
                     await _faceClient.TrainPersonGroupAsync(currentGroupId);
                 }
             }
