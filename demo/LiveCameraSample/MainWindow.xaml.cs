@@ -56,6 +56,7 @@ using Point = System.Windows.Point;
 using System.IO;
 using System.Timers;
 using System.Windows.Threading;
+using System.Drawing;
 
 namespace LiveCameraSample
 {
@@ -88,7 +89,7 @@ namespace LiveCameraSample
         private bool _fuseClientRemoteResults;
         private LiveCameraResult _latestResultsToDisplay = null;
         private AppMode _mode;
-        private const int NumOfRounds = 1;
+        private const int NumOfRounds = 2;
         private IRound round = null;
         private int roundNumber = 0;
 
@@ -134,7 +135,7 @@ namespace LiveCameraSample
 
             // Create grabber. 
             _grabber = new FrameGrabber<LiveCameraResult>();
-
+            
             updateMode(AppMode.Participants);
 
             // Set up a listener for when the client receives a new frame.
@@ -396,7 +397,11 @@ namespace LiveCameraSample
 
                 if (this.gameState == GameState.Explain)
                 {
-                    visImage = Visualization.DrawExplain(visImage);
+                    this.Dispatcher.BeginInvoke((Action)(() =>
+                    {
+                        RightImage.Source = ImageProvider.Instructions;
+                        //visImage = Visualization.DrawExplain(visImage);
+                    }));
                 }
                 else if (this.gameState == GameState.RoundBegin)
                 {
@@ -490,9 +495,7 @@ namespace LiveCameraSample
 
         private BitmapSource VisualizeStartRound(VideoFrame frame)
         {
-
             var bitmap = VisualizeRound(frame);
-            
             return Visualization.DrawRoundStart(bitmap, round, roundNumber);
         }
 
@@ -631,7 +634,7 @@ namespace LiveCameraSample
                 this.sound = SoundProvider.PrepareYourself;
                 this.sound.Play();
                 this.gameState = GameState.Explain;
-                this.currentTimerTask = TimeSpan.FromSeconds(15);
+                this.currentTimerTask = TimeSpan.FromSeconds(3);
                 this.currentTimeTaskStart = DateTime.Now;
                 button.Visibility = Visibility.Hidden;
                 this.currentTimeTaskStart = DateTime.Now;

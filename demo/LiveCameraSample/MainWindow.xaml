@@ -6,6 +6,11 @@
         xmlns:local="clr-namespace:LiveCameraSample"
         mc:Ignorable="d"
         Title="Facenating" Height="550" Width="725" Loaded="Window_Loaded"  WindowState="Maximized">
+    <Window.Resources>
+        <Style TargetType="Image">
+            <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
+        </Style>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="35" />
@@ -21,8 +26,8 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Image x:Name="LeftImage" Grid.Column="0" Margin="5" />
-            <Image x:Name="RightImage" Grid.Column="1" Margin="5" Panel.ZIndex="1" />
+            <Image RenderOptions.BitmapScalingMode="HighQuality" x:Name="LeftImage" Grid.Column="0" Margin="5" />
+            <Image RenderOptions.BitmapScalingMode="HighQuality" x:Name="RightImage" Grid.Column="1" Margin="5" Panel.ZIndex="1" />
             <StackPanel Visibility="{Binding Source={StaticResource Settings}, Path=Default.SettingsPanelVisibility, Mode=TwoWay}" Grid.Column="1" Panel.ZIndex="2" Name="SettingsPanel" Background="LightGray" VerticalAlignment="Top" Margin="5">
                 <TextBlock Margin="5" Grid.Row="0" FontWeight="Bold" Text="Settings"/>
                 <Grid>

@@ -67,7 +67,7 @@ namespace LiveCameraSample
                     deltaFromAverage = age - personAverageAge;
                     if (deltaFromAverage > 0 && personAverageAge > 0)
                     {
-                        scoresDictionary[item.Key] = 10 * (int)Math.Round(deltaFromAverage / 3);
+                        scoresDictionary[item.Key] = 10 * (int)Math.Round(deltaFromAverage / 2);
                     }
 
                     this.agesCount[personId]++;
