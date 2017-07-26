@@ -52,8 +52,28 @@ namespace LiveCameraSample
     public class Visualization
     {
         private static SolidColorBrush s_lineBrush = new SolidColorBrush(new System.Windows.Media.Color { R = 255, G = 185, B = 0, A = 255 });
+
+        private static SolidColorBrush s_lineBrush1 = new SolidColorBrush(new System.Windows.Media.Color { R = 26, G = 130, B = 196, A = 255 });
+        private static SolidColorBrush s_lineBrush2 = new SolidColorBrush(new System.Windows.Media.Color { R = 255, G = 203, B = 57, A = 255});
+        private static SolidColorBrush s_lineBrush3 = new SolidColorBrush(new System.Windows.Media.Color { R = 241, G = 91, B = 96, A = 255});
+        private static SolidColorBrush s_lineBrush4 = new SolidColorBrush(new System.Windows.Media.Color { R = 40, G = 40, B = 50, A = 255});
+        private static SolidColorBrush s_lineBrush5 = new SolidColorBrush(new System.Windows.Media.Color { R = 229, G = 47, B = 137, A = 255 });
+        private static SolidColorBrush[] brushes = new SolidColorBrush[5] { s_lineBrush1, s_lineBrush2, s_lineBrush3, s_lineBrush4, s_lineBrush5 }; 
+        private static Dictionary<Guid, SolidColorBrush> colorsForPlayers = new Dictionary<Guid, SolidColorBrush>();
+
         private static Typeface s_typeface = new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
-        
+        private static int latestBrushIndex = 0;
+
+        private static SolidColorBrush GetLatestBrush()
+        {
+            if (latestBrushIndex == 5)
+            {
+                latestBrushIndex = 0;
+            }
+
+            return brushes[latestBrushIndex++];
+        }
+
         private static BitmapSource DrawOverlay(BitmapSource baseImage, Action<DrawingContext, double> drawAction, bool drawVideo = false)
         {
             double annotationScale = baseImage.PixelHeight / 320;
@@ -193,63 +213,6 @@ namespace LiveCameraSample
             return outputBitmap;
         }
 
-
-        public static BitmapSource DrawTags(BitmapSource baseImage, Tag[] tags)
-        {
-            if (tags == null)
-            {
-                return baseImage;
-            }
-
-            Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
-            {
-                double y = 0;
-                foreach (var tag in tags)
-                {
-                    // Create formatted text--in a particular font at a particular size
-                    FormattedText ft = new FormattedText(tag.Name,
-                        CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
-                        42 * annotationScale, Brushes.Black);
-                    // Instead of calling DrawText (which can only draw the text in a solid colour), we
-                    // convert to geometry and use DrawGeometry, which allows us to add an outline. 
-                    var geom = ft.BuildGeometry(new System.Windows.Point(10 * annotationScale, y));
-                    drawingContext.DrawGeometry(s_lineBrush, new Pen(Brushes.Black, 2 * annotationScale), geom);
-                    // Move line down
-                    y += 42 * annotationScale;
-                }
-            };
-
-            return DrawOverlay(baseImage, drawAction, true);
-        }
-
-        public static BitmapSource DrawScores(BitmapSource baseImage, Dictionary<Guid, int> scores)
-        {
-            if (scores == null)
-            {
-                return baseImage;
-            }
-
-            Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
-            {
-                double y = 0;
-                foreach (var score in scores.Values) //TODO
-                {
-                    // Create formatted text--in a particular font at a particular size
-                    FormattedText ft = new FormattedText(score + "pts",
-                        CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
-                        42 * annotationScale, Brushes.Black);
-                    // Instead of calling DrawText (which can only draw the text in a solid colour), we
-                    // convert to geometry and use DrawGeometry, which allows us to add an outline. 
-                    var geom = ft.BuildGeometry(new System.Windows.Point(10 * annotationScale, y));
-                    drawingContext.DrawGeometry(s_lineBrush, new Pen(Brushes.Black, 2 * annotationScale), geom);
-                    // Move line down
-                    y += 42 * annotationScale;
-                }
-            };
-
-            return DrawOverlay(baseImage, drawAction, true);
-        }
-
         public static BitmapSource DrawRoundStart(BitmapSource baseImage, IRound round, int roundNum)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
@@ -346,14 +309,21 @@ namespace LiveCameraSample
                 foreach (var personId in identities.Keys)
                 {
                     var face = identities[personId];
-
+                   
                     if (face.FaceRectangle == null) { continue; }
 
                     Rect faceRect = new Rect(
                         face.FaceRectangle.Left, face.FaceRectangle.Top,
                         face.FaceRectangle.Width, face.FaceRectangle.Height);
                     string text = "";
-                   
+
+                     SolidColorBrush brush;
+                                        if (!colorsForPlayers.TryGetValue(personId, out brush))
+                                        {
+                                            colorsForPlayers[personId] = GetLatestBrush();
+                                        }
+                                        brush = colorsForPlayers[personId];
+                    
                     if (face.FaceAttributes != null && mode == MainWindow.AppMode.Faces)
                     {
                         text += Aggregation.SummarizeFaceAttributes(face.FaceAttributes);
@@ -375,9 +345,9 @@ namespace LiveCameraSample
 
                        drawingContext.DrawRectangle(
                            Brushes.Transparent,
-                           new Pen(s_lineBrush, lineThickness),
+                           new Pen(brush, lineThickness),
                            faceRect);
-                           
+
 
                     //drawingContext.DrawImage(ImageProvider.Frame, faceRect);
                     if (text != "")
@@ -396,7 +366,7 @@ namespace LiveCameraSample
                         var rect = ft.BuildHighlightGeometry(origin).GetRenderBounds(null);
                         rect.Inflate(xpad, ypad);
 
-                        drawingContext.DrawRectangle(s_lineBrush, null, rect);
+                        drawingContext.DrawRectangle(brush, null, rect);
                         drawingContext.DrawText(ft, origin);
                     }
                 }

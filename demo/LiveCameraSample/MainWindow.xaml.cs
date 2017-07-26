@@ -363,7 +363,6 @@ namespace LiveCameraSample
                     visImage = Visualization.DrawSomething(visImage, round.GetRoundTarget(), new Point(0, 0));
 
                     visImage = Visualization.DrawFaces(visImage, result.Identities, scoringSystem, _mode);
-                    visImage = Visualization.DrawTags(visImage, result.Tags);
 
                     SavePlayerImages(visImage, result);
                 }
