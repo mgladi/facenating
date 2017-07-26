@@ -171,13 +171,17 @@ namespace LiveCameraSample
                         gameState = GameState.RoundEnd;
                         scoringSystem.CreateNewRound();
                     }
-
                     else if (gameState == GameState.RoundEnd)
                     {
                         if (roundNumber == NumOfRounds)
                         {
                             currentTimerTask = TimeSpan.FromSeconds(3);
                             gameState = GameState.GameEnd;
+                            this.Dispatcher.BeginInvoke((Action)(() =>
+                            {
+                                button.Visibility = Visibility.Visible;
+                            }));
+                           
                             _grabber.StopProcessingAsync();
                         }
                         else
@@ -285,7 +289,7 @@ namespace LiveCameraSample
 
             this.Dispatcher.BeginInvoke((Action)(() =>
             {
-                button.IsEnabled = currentParticipants.Length > 1;
+                button.Visibility = currentParticipants.Length > 1 && button_mode == "startGame" ? Visibility.Visible : Visibility.Hidden;
             }));
             // Count the API call. 
             Properties.Settings.Default.FaceAPICallCount++;
@@ -587,29 +591,49 @@ namespace LiveCameraSample
             }
         }
 
+        private string button_mode = "startGame";
         private async void button_Click(object sender, RoutedEventArgs e)
         {
-            button.Visibility = Visibility.Hidden;
-
-            var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
-            byte[] streamBytes = ReadFully(otherJpg);
-
-            this.gameState = GameState.Explain;
-            this.currentTimerTask = TimeSpan.FromSeconds(3);
-            this.currentTimeTaskStart = DateTime.Now;
-
-            //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
-            await _faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
-
-            if (currentParticipants.Length > 1)
+            if (button_mode == "startGame")
             {
-                for (int i = 0; i < currentParticipants.Length; i++)
+                button.Content = "Start Again";
+                button_mode = "restartGame";
+                var otherJpg = lastFrame.Image.Clone().ToMemoryStream(".jpg", s_jpegParams);
+                byte[] streamBytes = ReadFully(otherJpg);
+
+                this.gameState = GameState.Explain;
+                this.currentTimerTask = TimeSpan.FromSeconds(3);
+                this.currentTimeTaskStart = DateTime.Now;
+                button.Visibility = Visibility.Hidden;
+
+                //FaceServiceClient faceClient = new FaceServiceClient("3b6c7018fa594441b2465d5d8652526a", "https://westeurope.api.cognitive.microsoft.com/face/v1.0");
+                await _faceClient.CreatePersonGroupAsync(currentGroupId, currentGroupName);
+
+                if (currentParticipants.Length > 1)
                 {
-                    CreatePersonResult person = await _faceClient.CreatePersonAsync(currentGroupId, i.ToString());
-                    MemoryStream s = new MemoryStream(streamBytes);
-                    var addedPersistedPerson = await _faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, s, "userData", currentParticipants[i].FaceRectangle);
+                    for (int i = 0; i < currentParticipants.Length; i++)
+                    {
+                        CreatePersonResult person = await _faceClient.CreatePersonAsync(currentGroupId, i.ToString());
+                        MemoryStream s = new MemoryStream(streamBytes);
+                        var addedPersistedPerson = await _faceClient.AddPersonFaceAsync(currentGroupId, person.PersonId, s, "userData", currentParticipants[i].FaceRectangle);
+                    }
+                    await _faceClient.TrainPersonGroupAsync(currentGroupId);
                 }
-                await _faceClient.TrainPersonGroupAsync(currentGroupId);
+            }
+            else if (button_mode == "restartGame")
+            {
+                currentGroupId = Guid.NewGuid().ToString();
+                currentGroupName = currentGroupId;
+                roundNumber = 0;
+                this.Dispatcher.BeginInvoke((Action)(() =>
+                {
+                    button.Content = "Start Game";
+                    button.Visibility = Visibility.Hidden;
+                    this.gameState = GameState.Participants;
+                    button_mode = "startGame";
+                    updateMode(AppMode.Participants);
+                    _grabber.StartProcessingCameraAsync(0);
+                }));
             }
         }
 
@@ -680,7 +704,7 @@ namespace LiveCameraSample
         private void t_Tick(object sender, EventArgs e)
         {
             TimeSpan timeSpan = currentTimerTask - (DateTime.Now - roundStart);
-            timerText = timeSpan.ToString(@"mm\:ss");
+            timerText = timeSpan.ToString(@"ss");
         }
     }
 }

@@ -13,7 +13,7 @@
             <RowDefinition Height="35" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" Name="ButtonBar">
-            <Button x:Name="button" IsEnabled="False" Content="START GAME!!!" Width="194" Click="button_Click" Margin="0,0,0,0.2" RenderTransformOrigin="0.775,1.417"/>
+            <Button x:Name="button" Visibility="Hidden" Content="Start Game" Width="194" Click="button_Click" Margin="0,0,0,0.2" RenderTransformOrigin="0.775,1.417"/>
         </DockPanel>
         <Button Content="Show/Hide Settings" Padding="5,0" Visibility="Visible" Margin="5" Click="SettingsButton_Click" HorizontalAlignment="Right" />
         <Grid Grid.Row="1">

@@ -193,10 +193,9 @@ namespace LiveCameraSample
             DrawingVisual visual = new DrawingVisual();
             DrawingContext drawingContext = visual.RenderOpen();
 
-
             FormattedText ft = new FormattedText(showTime,
                 CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
-                20, Brushes.Yellow);
+                50, Brushes.White);
 
             drawingContext.DrawImage(lastBitmap, new Rect(0, 0, lastBitmap.Width, lastBitmap.Height));
 
@@ -232,7 +231,7 @@ namespace LiveCameraSample
                 FormattedText roundNmberText = new FormattedText(roundNum.ToString(),
                     CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 40, Brushes.White);
 
-                var roundNumberPoint = new System.Windows.Point(200, 13);
+                var roundNumberPoint = new System.Windows.Point(200, 16);
                 drawingContext.DrawText(roundNmberText, roundNumberPoint);
 
             };
