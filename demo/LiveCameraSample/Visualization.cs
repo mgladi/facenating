@@ -250,15 +250,28 @@ namespace LiveCameraSample
             return DrawOverlay(baseImage, drawAction, true);
         }
 
-        public static BitmapSource DrawRoundStart(BitmapSource baseImage, IRound round)
+        public static BitmapSource DrawRoundStart(BitmapSource baseImage, IRound round, int roundNum)
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
                 var image = round.GetRoundTemplateImage();
                 var faceRect = new Rect(0, 0, baseImage.Width, baseImage.Height);
-                faceRect.Inflate(6 * annotationScale, 6 * annotationScale);
+                //faceRect.Inflate(6 * annotationScale, 6 * annotationScale);
 
                 drawingContext.DrawImage(image, faceRect);
+
+                FormattedText targetText = new FormattedText(round.GetRoundImageText(),
+                    CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 30, Brushes.White);
+
+                var targetPoint = new System.Windows.Point(70,160);
+                drawingContext.DrawText(targetText, targetPoint);
+
+                FormattedText roundNmberText = new FormattedText(roundNum.ToString(),
+                    CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 40, Brushes.White);
+
+                var roundNumberPoint = new System.Windows.Point(200, 13);
+                drawingContext.DrawText(roundNmberText, roundNumberPoint);
+
             };
 
             return DrawOverlay(baseImage, drawAction);

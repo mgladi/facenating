@@ -446,7 +446,7 @@ namespace LiveCameraSample
             var bitmap = VisualizeRound(frame);
             var description = round.GetRoundDescription();
             
-            return Visualization.DrawRoundStart(bitmap, round);
+            return Visualization.DrawRoundStart(bitmap, round, roundNumber);
         }
 
         private BitmapSource VisualizeEndRound(VideoFrame frame)

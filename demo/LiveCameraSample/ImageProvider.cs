@@ -12,7 +12,7 @@ namespace LiveCameraSample
     {
         public static BitmapImage HappyRound { get
             {
-                string fullPath = Path.GetFullPath("Data/happy_round_template.png");
+                string fullPath = Path.GetFullPath("Data/round_happy.png");
                 return new BitmapImage(new Uri(fullPath));
             }
         }
