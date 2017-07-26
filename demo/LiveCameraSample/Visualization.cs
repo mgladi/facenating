@@ -49,8 +49,18 @@ using GameSystem;
 
 namespace LiveCameraSample
 {
+
+    public class PlayerScoreAndImage
+    {
+        public Guid PlayerId { get; set; }
+        public int Score { get; set; }
+        public CroppedBitmap Image { get; set; }
+    }
+
     public class Visualization
     {
+        private static Random rnd = new Random();
+
         private static SolidColorBrush s_lineBrush = new SolidColorBrush(new System.Windows.Media.Color { R = 255, G = 185, B = 0, A = 255 });
         private static SolidColorBrush s_lineBrush1 = new SolidColorBrush(new System.Windows.Media.Color { R = 26, G = 130, B = 196, A = 255 });
         private static SolidColorBrush s_lineBrush2 = new SolidColorBrush(new System.Windows.Media.Color { R = 255, G = 203, B = 57, A = 255});
@@ -267,7 +277,7 @@ namespace LiveCameraSample
                             var scorePoint = new System.Windows.Point(20 + 300 * (i % 2), 300 + 140 * (i / 2));
                             drawingContext.DrawText(scoreText, scorePoint);
 
-                            if(playerFinalScore != null && playerFinalScore.ContainsKey(player.Key))
+                            if (playerFinalScore != null && playerFinalScore.ContainsKey(player.Key))
                             {
                                 scoreText = new FormattedText("Total: " + playerFinalScore[player.Key].ToString(),
                                     CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 30, Brushes.Red);
@@ -284,8 +294,6 @@ namespace LiveCameraSample
             return DrawOverlay(baseImage, drawAction);
         }
 
-
-
         public static BitmapSource DrawGameEnd(BitmapSource baseImage, 
             Dictionary<Guid, int> playerScore, 
             Dictionary<Guid, List<CroppedBitmap>> playerImages = null,
@@ -293,14 +301,59 @@ namespace LiveCameraSample
         {
             Action<DrawingContext, double> drawAction = (drawingContext, annotationScale) =>
             {
-                FormattedText titleText = new FormattedText("End Game!",
-                CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 25, Brushes.Purple);
-                var titlePoint = new System.Windows.Point(20, 20);
+                //FormattedText titleText = new FormattedText("End Game!",
+                //CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface, 25, Brushes.Purple);
+                //var titlePoint = new System.Windows.Point(20, 20);
 
-                var contentPoint = new System.Windows.Point(20, 60);
+                //var contentPoint = new System.Windows.Point(20, 60);
 
-                drawingContext.DrawText(titleText, titlePoint);
-                
+                //drawingContext.DrawText(titleText, titlePoint);
+
+                Guid winnerGuid = playerScore.FirstOrDefault().Key;
+
+                var winnerValue = playerScore[winnerGuid];
+                foreach (var item in playerScore)
+                {
+                    if (playerScore[item.Key] > winnerValue)
+                    {
+                        winnerGuid = item.Key;
+                        winnerValue = playerScore[item.Key];
+                    }
+                }
+                var winnerImages = playerImages[winnerGuid];
+                var r = rnd.Next(winnerImages.Count);
+                var winnerImage = winnerImages[r];
+
+                Dictionary<Guid, List<CroppedBitmap>> losersImages = new Dictionary<Guid, List<CroppedBitmap>>();
+                foreach (var item in playerImages)
+                {
+                    if (item.Key != winnerGuid)
+                    {
+                        losersImages[item.Key] = item.Value;
+                    }
+                }
+
+                List<PlayerScoreAndImage> losersList = new List<PlayerScoreAndImage>();
+                foreach (var item in losersImages)
+                {
+                    var images = item.Value;
+                    r = rnd.Next(images.Count);
+                    var image = images[r];
+                    losersList.Add(new PlayerScoreAndImage()
+                    {
+                        PlayerId = item.Key,
+                        Score = playerScore[item.Key],
+                        Image = image
+                    });
+                }      
+                      
+                drawingContext.DrawImage(winnerImage, new Rect(220, 110, 200, 200));
+
+              
+                foreach (var item in losersList)
+                {
+                    drawingContext.DrawImage(item.Image, new Rect(220, 360, 60, 60));
+                }
             };
 
             return DrawOverlay(baseImage, drawAction);

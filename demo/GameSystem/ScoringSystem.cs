@@ -20,12 +20,32 @@ namespace GameSystem
             private set;
         }
 
-        public ScoringSystem()
+        private Guid[] guids;
+        public ScoringSystem(Guid[] guids)
         {
-            TotalScore= new Dictionary<Guid,int>();
-            CurrentRoundScore = new Dictionary<Guid, int>();
+            this.guids = guids;
+            ZeroTotalScore();
+            ZeroCurrentRoundScore();
         }
 
+        private void ZeroTotalScore()
+        {
+            TotalScore = new Dictionary<Guid, int>();
+            foreach (var item in guids)
+            {
+                TotalScore[item] = 0;
+            }    
+        }
+
+        private void ZeroCurrentRoundScore()
+        {
+
+            CurrentRoundScore= new Dictionary<Guid, int>();
+            foreach (var item in guids)
+            {
+                CurrentRoundScore[item] = 0;
+            }
+        }
 
         public void AddToCurrentRound(Dictionary<Guid, int> playerRoundScore)
         {
@@ -42,7 +62,7 @@ namespace GameSystem
 
         public void CreateNewRound()
         {
-            CurrentRoundScore = new Dictionary<Guid, int>();
+            ZeroCurrentRoundScore();
         }
 
         public void AddRoundToGameScore()
