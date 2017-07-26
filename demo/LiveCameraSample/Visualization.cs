@@ -101,7 +101,7 @@ namespace LiveCameraSample
 
         public static BitmapSource DrawParticipants(BitmapSource baseImage, Microsoft.ProjectOxford.Face.Contract.Face[] faces)
         {
-
+            var fullRect = new Rect(0, 0, baseImage.PixelWidth, baseImage.PixelHeight);
             var rect1 = new Rect(0, 0, baseImage.PixelWidth / 2, baseImage.PixelHeight / 2);
             var rect2 = new Rect(0, baseImage.PixelHeight/ 2, baseImage.PixelWidth / 2, baseImage.PixelHeight / 2);
             var rect3 = new Rect(baseImage.PixelWidth / 2, 0, baseImage.PixelWidth / 2, baseImage.PixelHeight / 2);
@@ -118,12 +118,7 @@ namespace LiveCameraSample
 
                 if (faces.Length == 0)
                 {
-                    FormattedText ft = new FormattedText("Please stand\nin front of\nthe camera",
-                        CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
-                        42, Brushes.Black);
-                    // Instead of calling DrawText (which can only draw the text in a solid colour), we
-                    // convert to geometry and use DrawGeometry, which allows us to add an outline. 
-                    drawingContext.DrawText(ft, new Point(130,30));
+                    drawingContext.DrawImage(ImageProvider.WaitingForPlayers, fullRect);
                 }
                 for (int i = 0; i < faces.Length; i++)
                 {
@@ -140,11 +135,6 @@ namespace LiveCameraSample
                         var newFaceHeight = faceRect.Height * 1.6;
                         var newFaceX = faceRect.X - (faceRect.Width * 0.52);
                         var newFaceWidth = faceRect.Width* 2.13;
-
-                        int rectWidth = (int)(baseImage.Width / 2);
-                        int rectHeight = (int)(baseImage.Height/ 2);
-                        int xOffset = (((int)rectWidth - (int)faceRect.Width) / 2);
-                        int yOffset = (((int)rectHeight - (int)faceRect.Height) / 2);
 
                         if (newFaceX < 0)
                         {
