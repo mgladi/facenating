@@ -77,7 +77,7 @@ namespace LiveCameraSample
         private double getRandomScore()
         {
             Random random = new Random();
-            return 0.5 + (random.Next(6) / 10.0); // random in [0.5, 1.0]
+            return 0.5 + (random.Next(5) / 10.0); // random in [0.5, 0.9]
         }
 
         private EmotionType getRandomEmotion()
@@ -87,7 +87,7 @@ namespace LiveCameraSample
             return (EmotionType) values.GetValue(random.Next(values.Length));
         }
 
-        private KeyValuePair<string, float> getDominantEmotion(EmotionScores scores)
+        public static KeyValuePair<string, float> getDominantEmotion(EmotionScores scores)
         {
             var scoreList = scores.ToRankedList();
             KeyValuePair<string, float> maxPair = scoreList.First();
