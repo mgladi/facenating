@@ -163,7 +163,7 @@ namespace LiveCameraSample
         }
 
         private static ImageSource lastBitmap;
-        public static ImageSource DrawTime()
+        public static ImageSource DrawTime(string showTime)
         {
 
             if (lastBitmap== null)
@@ -174,8 +174,7 @@ namespace LiveCameraSample
             DrawingContext drawingContext = visual.RenderOpen();
 
 
-            string dt = DateTime.Now.ToString("M/d/yyyy hh:mm:ss");
-            FormattedText ft = new FormattedText(dt,
+            FormattedText ft = new FormattedText(showTime,
                 CultureInfo.CurrentCulture, FlowDirection.LeftToRight, s_typeface,
                 20, Brushes.Yellow);
 
