@@ -119,6 +119,8 @@ namespace LiveCameraSample
         private DateTime lastPlayerImagesTime = DateTime.MinValue;
         private int playerImagesTimeOffsetSec = 2;
 
+        HashSet<EmotionType> roundsPlayed = new HashSet<EmotionType>();
+
         public MainWindow()
         {
             currentGroupId = currentGroupName;
@@ -666,6 +668,7 @@ namespace LiveCameraSample
             else if (button_mode == "restartGame")
             {
                 currentGroupId = Guid.NewGuid().ToString();
+                roundsPlayed = new HashSet<EmotionType>();
                 currentGroupName = currentGroupId;
                 roundNumber = 0;
                 t.Stop();
@@ -705,29 +708,34 @@ namespace LiveCameraSample
 
         private IRound getRandomRound()
         {
-            if (roundNumber == 1)
+            EmotionType[] ProbabilityTable =
             {
-                updateMode(AppMode.Emotions);
-                return new RoundEmotion(EmotionType.Surprise, 0.9);
+                EmotionType.Surprise, EmotionType.Surprise, EmotionType.Surprise,
+                EmotionType.Anger, EmotionType.Anger,
+                EmotionType.Sadness, EmotionType.Sadness,
+                EmotionType.Fear,
+                EmotionType.Disgust,
+                EmotionType.Happiness,
+            };
+
+            Random rand = new Random();
+            int randomEmotionIndex = rand.Next(10);
+
+            while (roundsPlayed.Contains(ProbabilityTable[randomEmotionIndex]))
+            {
+                randomEmotionIndex = rand.Next(10);
             }
-            if (roundNumber == 2)
+
+            roundsPlayed.Add(ProbabilityTable[randomEmotionIndex]);
+
+            if (rand.Next()%5 == 0)
             {
                 updateMode(AppMode.Faces);
                 return new RoundAge();
             }
 
-            EmotionType[] ProbabilityTable =
-            {
-                EmotionType.Anger, EmotionType.Anger, EmotionType.Anger,
-                EmotionType.Fear, EmotionType.Fear, EmotionType.Fear,
-                EmotionType.Sadness, EmotionType.Sadness,
-                EmotionType.Disgust,
-                EmotionType.Happiness,
-            };
-
-            int rand = new Random().Next(10);
             updateMode(AppMode.Emotions);
-            return new RoundEmotion(ProbabilityTable[rand]);
+            return new RoundEmotion(ProbabilityTable[randomEmotionIndex]);
         }
 
         public byte[] ReadFully(Stream input)
